@@ -6,7 +6,6 @@ updated: "2025-11-23"
 excerpt: "深入解析 Java 数组的特性、用法和最佳实践。"
 category: "TECHNOLOGY"
 tags: ["Java", "Arrays", "Programming"]
-readTime: "8 MIN READ"
 ---
 
 ## 一、介绍

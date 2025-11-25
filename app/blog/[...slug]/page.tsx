@@ -10,21 +10,23 @@ import 'highlight.js/styles/atom-one-dark.css'; // Import highlight.js style
 import TableOfContents from "@/components/blog/TableOfContents";
 import CodeBlock from "@/components/blog/CodeBlock";
 import CollapsibleTable from "@/components/blog/CollapsibleTable";
+import Comments from "@/components/blog/Comments";
 
 interface PageProps {
-    params: Promise<{ slug: string }>;
+    params: Promise<{ slug: string[] }>;
 }
 
 export async function generateStaticParams() {
     const posts = getSortedPostsData();
     return posts.map((post) => ({
-        slug: post.slug,
+        slug: post.slug.split('/'),
     }));
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
     const { slug } = await params;
-    const post = getPostData(slug);
+    const slugStr = slug.map(s => decodeURIComponent(s)).join('/');
+    const post = getPostData(slugStr);
 
     if (!post) {
         notFound();
@@ -81,7 +83,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                                 </span>
                             </div>
 
-                            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight glow-text-cyan">
+                            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 leading-tight glow-text-cyan">
                                 {post.title}
                             </h1>
 
@@ -90,7 +92,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
                         {/* Content */}
                         <div className="content-frame mb-20">
-                            <div className="prose prose-invert prose-lg max-w-none prose-headings:font-mono prose-headings:text-neon-cyan prose-p:text-gray-300 prose-a:text-neon-purple hover:prose-a:text-neon-cyan prose-strong:text-white prose-code:text-neon-cyan prose-pre:bg-transparent prose-pre:border-none prose-pre:p-0">
+                            <div className="prose dark:prose-invert prose-lg max-w-none prose-headings:font-mono prose-headings:text-neon-cyan prose-a:text-neon-purple hover:prose-a:text-neon-cyan prose-code:text-neon-cyan prose-pre:bg-transparent prose-pre:border-none prose-pre:p-0">
                                 <ReactMarkdown
                                     rehypePlugins={[rehypeHighlight, rehypeSlug]}
                                     remarkPlugins={[remarkGfm]}
@@ -109,6 +111,9 @@ export default async function BlogPostPage({ params }: PageProps) {
                             <span>END_OF_FILE</span>
                             <span>SLUG: {post.slug}</span>
                         </div>
+
+                        {/* Comments Section */}
+                        <Comments path={`/blog/${slugStr}`} />
                     </div>
 
                     {/* Sidebar (TOC) */}

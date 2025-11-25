@@ -1,11 +1,51 @@
 @import "tailwindcss";
 
 :root {
+  /* Premium Light Theme - High Contrast */
+  --background: #e5e5e5;
+  /* Gray background */
+  --foreground: #000000;
+  /* Pure Black for maximum clarity */
+  --neon-cyan: #006064;
+  /* Darker Teal */
+  --neon-purple: #4a148c;
+  /* Darker Purple */
+  --glass-border: rgba(0, 0, 0, 0.2);
+  /* Much stronger border color */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  /* More opaque background */
+  --grid-color: rgba(0, 0, 0, 0.06);
+  --panel-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+
+  /* Waline Light Theme */
+  --waline-theme-color: var(--neon-cyan);
+  --waline-active-color: var(--neon-purple);
+  --waline-bgcolor: var(--glass-bg);
+  --waline-bgcolor-light: rgba(255, 255, 255, 0.5);
+  --waline-border-color: var(--glass-border);
+  --waline-disable-bgcolor: rgba(0, 0, 0, 0.05);
+  --waline-info-bgcolor: rgba(0, 0, 0, 0.05);
+  --waline-info-color: var(--foreground);
+}
+
+.dark {
+  /* Cyberpunk Dark Theme */
   --background: #050505;
   --foreground: #e0e0e0;
   --neon-cyan: #00f3ff;
   --neon-purple: #bc13fe;
   --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(10, 10, 10, 0.6);
+  --grid-color: rgba(0, 243, 255, 0.03);
+  --panel-shadow: none;
+
+  /* Waline Dark Theme */
+  --waline-bgcolor: rgba(255, 255, 255, 0.05);
+  --waline-bgcolor-light: rgba(255, 255, 255, 0.02);
+  --waline-border-color: rgba(255, 255, 255, 0.1);
+  --waline-disable-bgcolor: rgba(255, 255, 255, 0.1);
+  --waline-info-bgcolor: rgba(255, 255, 255, 0.1);
+  --waline-info-color: #888;
 }
 
 @theme inline {
@@ -14,6 +54,8 @@
   --color-neon-cyan: var(--neon-cyan);
   --color-neon-purple: var(--neon-purple);
   --color-glass-border: var(--glass-border);
+  --color-glass-bg: var(--glass-bg);
+  --color-panel-shadow: var(--panel-shadow);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -23,6 +65,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Sci-Fi Grid Background */
@@ -34,11 +77,12 @@ body::before {
   width: 100%;
   height: 100%;
   background:
-    linear-gradient(to right, rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
   background-size: 40px 40px;
   z-index: -1;
   pointer-events: none;
+  transition: background 0.5s ease;
 }
 
 /* Glow effects */
@@ -51,9 +95,13 @@ body::before {
 }
 
 .glass-panel {
-  background: rgba(10, 10, 10, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid var(--glass-border);
+  /* Thicker border */
+  box-shadow: var(--panel-shadow);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Mac-style Code Blocks */
@@ -75,11 +123,15 @@ body::before {
 /* Content Frame "Holographic Panel" */
 .content-frame {
   position: relative;
-  background: rgba(10, 10, 10, 0.4);
-  border: 1px solid rgba(0, 243, 255, 0.1);
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  /* Thicker border */
   padding: 2rem;
   border-radius: 0.5rem;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: var(--panel-shadow);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Decorative corners for content frame */

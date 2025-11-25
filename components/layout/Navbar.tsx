@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Terminal, Globe } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export default function Navbar() {
     const { language, setLanguage, t } = useLanguage();
@@ -48,6 +49,7 @@ export default function Navbar() {
                         <Globe className="w-4 h-4" />
                         <span>{language === 'en' ? 'EN' : '中文'}</span>
                     </button>
+                    <ThemeToggle />
                 </div>
             </div>
         </motion.nav>

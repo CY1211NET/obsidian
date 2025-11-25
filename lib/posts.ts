@@ -16,28 +16,76 @@ export interface PostData {
     content: string;
 }
 
-export function getSortedPostsData(): PostData[] {
-    const fileNames = fs.readdirSync(postsDirectory);
-    const allPostsData = fileNames
-        .filter((fileName) => fileName.endsWith('.md'))
-        .map((fileName) => {
-            const slug = fileName.replace(/\.md$/, '');
-            const fullPath = path.join(postsDirectory, fileName);
-            const fileContents = fs.readFileSync(fullPath, 'utf8');
-            const { data, content } = matter(fileContents);
+/**
+ * Recursively get all markdown files from a directory
+ * @param dir - Directory to search
+ * @param baseDir - Base directory for calculating relative paths
+ * @returns Array of relative file paths
+ */
+function getAllMarkdownFiles(dir: string, baseDir: string = dir): string[] {
+    const files: string[] = [];
+    const items = fs.readdirSync(dir);
 
-            return {
-                slug,
-                title: data.title || 'Untitled',
-                date: data.date || new Date().toISOString().split('T')[0],
-                updatedAt: data.updatedAt,
-                category: data.category || 'Uncategorized',
-                tags: data.tags || [],
-                excerpt: data.excerpt,
-                readTime: data.readTime,
-                content,
-            };
-        });
+    for (const item of items) {
+        const fullPath = path.join(dir, item);
+        const stat = fs.statSync(fullPath);
+
+        if (stat.isDirectory()) {
+            // Recursively search subdirectories
+            files.push(...getAllMarkdownFiles(fullPath, baseDir));
+        } else if (item.endsWith('.md')) {
+            // Get relative path from base directory
+            const relativePath = path.relative(baseDir, fullPath);
+            files.push(relativePath);
+        }
+    }
+
+    return files;
+}
+
+/**
+ * Calculate read time based on word count (approx. 200 words per minute)
+ * @param content - Markdown content
+ * @returns Read time string (e.g., "5 MIN READ")
+ */
+function calculateReadTime(content: string): string {
+    const words = content.trim().split(/\s+/).length;
+    const chineseChars = (content.match(/[\u4e00-\u9fa5]/g) || []).length;
+    const totalCount = words + chineseChars;
+    const minutes = Math.ceil(totalCount / 200);
+    return `${minutes} MIN READ`;
+}
+
+export function getSortedPostsData(): PostData[] {
+    const markdownFiles = getAllMarkdownFiles(postsDirectory);
+    const allPostsData = markdownFiles.map((relativePath) => {
+        // Convert file path to slug (remove .md extension and normalize path separators)
+        const slug = relativePath.replace(/\.md$/, '').replace(/\\/g, '/');
+        const fullPath = path.join(postsDirectory, relativePath);
+        const fileContents = fs.readFileSync(fullPath, 'utf8');
+        const { data, content } = matter(fileContents);
+
+        let dateStr = new Date().toISOString().split('T')[0];
+        if (data.date) {
+            if (data.date instanceof Date) {
+                dateStr = data.date.toISOString().split('T')[0];
+            } else {
+                dateStr = String(data.date);
+            }
+        }
+
+        return {
+            slug,
+            title: data.title || 'Untitled',
+            date: dateStr,
+            updatedAt: data.updatedAt,
+            category: data.category || 'Uncategorized',
+            tags: data.tags || [],
+            excerpt: data.excerpt,
+            readTime: calculateReadTime(content), // Auto-calculate read time
+            content,
+        };
+    });
 
     return allPostsData.sort((a, b) => {
         if (a.date < b.date) {
@@ -50,19 +98,35 @@ export function getSortedPostsData(): PostData[] {
 
 export function getPostData(slug: string): PostData | null {
     try {
-        const fullPath = path.join(postsDirectory, `${slug}.md`);
+        // Normalize slug to use system path separator
+        const normalizedSlug = slug.replace(/\//g, path.sep);
+        const fullPath = path.join(postsDirectory, `${normalizedSlug}.md`);
+
+        if (!fs.existsSync(fullPath)) {
+            return null;
+        }
+
         const fileContents = fs.readFileSync(fullPath, 'utf8');
         const { data, content } = matter(fileContents);
+
+        let dateStr = new Date().toISOString().split('T')[0];
+        if (data.date) {
+            if (data.date instanceof Date) {
+                dateStr = data.date.toISOString().split('T')[0];
+            } else {
+                dateStr = String(data.date);
+            }
+        }
 
         return {
             slug,
             title: data.title || 'Untitled',
-            date: data.date || new Date().toISOString().split('T')[0],
+            date: dateStr,
             updatedAt: data.updatedAt,
             category: data.category || 'Uncategorized',
             tags: data.tags || [],
             excerpt: data.excerpt,
-            readTime: data.readTime,
+            readTime: calculateReadTime(content), // Auto-calculate read time
             content,
         };
     } catch (error) {

@@ -32,11 +32,11 @@ export default function BlogCard({ post, index }: { post: PostData; index: numbe
                             <span className="text-xs font-mono text-gray-500">{post.date}</span>
                         </div>
 
-                        <h3 className="text-xl font-bold mb-3 text-gray-100 group-hover:text-neon-cyan transition-colors line-clamp-2">
+                        <h3 className="text-xl font-bold mb-3 text-foreground group-hover:text-neon-cyan transition-colors line-clamp-2">
                             {post.title}
                         </h3>
 
-                        <p className="text-gray-400 text-sm mb-6 line-clamp-3 flex-grow">
+                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 line-clamp-3 flex-grow">
                             {post.excerpt}
                         </p>
 

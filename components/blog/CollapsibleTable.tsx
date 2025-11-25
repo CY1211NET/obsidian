@@ -13,7 +13,7 @@ export default function CollapsibleTable({ children, ...props }: CollapsibleTabl
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
-        <div className="my-8 border border-neon-cyan/20 rounded-lg overflow-hidden bg-black/20 backdrop-blur-sm">
+        <div className="my-8 border border-neon-cyan/20 rounded-lg overflow-hidden bg-[#1e1e1e]">
             {/* Header */}
             <div
                 className="flex items-center justify-between px-4 py-2 bg-neon-cyan/5 border-b border-neon-cyan/10 cursor-pointer hover:bg-neon-cyan/10 transition-colors"
