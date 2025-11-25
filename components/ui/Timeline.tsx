@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, Clock, Tag, Edit3, GitBranch, Filter, X } from 'lucide-react';
+import { Calendar, Clock, Tag, Edit3, GitBranch, Filter, X, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface TimelinePost {
@@ -13,6 +13,7 @@ interface TimelinePost {
     category: string;
     tags: string[];
     excerpt?: string;
+    content: string;
 }
 
 interface TimelineProps {
@@ -27,13 +28,67 @@ const monthNames = [
 
 export default function Timeline({ posts, tags }: TimelineProps) {
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>('');
     const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
 
-    // Filter posts based on selected tag
+    // Extract unique categories
+    const categories = useMemo(() => {
+        const cats = new Set(posts.map(post => post.category));
+        return Array.from(cats).sort();
+    }, [posts]);
+
+    // Helper function to get highlighted snippet
+    const getHighlightSnippet = (content: string, query: string) => {
+        if (!query) return null;
+        const lowerContent = content.toLowerCase();
+        const lowerQuery = query.toLowerCase();
+        const index = lowerContent.indexOf(lowerQuery);
+
+        if (index === -1) return null;
+
+        const start = Math.max(0, index - 60);
+        const end = Math.min(content.length, index + query.length + 60);
+        let snippet = content.slice(start, end);
+
+        if (start > 0) snippet = '...' + snippet;
+        if (end < content.length) snippet = snippet + '...';
+
+        // Highlight the query
+        const parts = snippet.split(new RegExp(`(${query})`, 'gi'));
+        return (
+            <span>
+                {parts.map((part, i) =>
+                    part.toLowerCase() === lowerQuery ? (
+                        <span key={i} className="text-neon-cyan bg-neon-cyan/10 font-bold px-1 rounded">
+                            {part}
+                        </span>
+                    ) : (
+                        part
+                    )
+                )}
+            </span>
+        );
+    };
+
+    // Filter posts based on selected tag, category, and search query
     const filteredPosts = useMemo(() => {
-        if (!selectedTag) return posts;
-        return posts.filter(post => post.tags.includes(selectedTag));
-    }, [posts, selectedTag]);
+        return posts.filter(post => {
+            const matchesTag = selectedTag ? post.tags.includes(selectedTag) : true;
+            const matchesCategory = selectedCategory ? post.category === selectedCategory : true;
+
+            const query = searchQuery.toLowerCase();
+            const matchesSearch = searchQuery ? (
+                post.title.toLowerCase().includes(query) ||
+                (post.excerpt && post.excerpt.toLowerCase().includes(query)) ||
+                post.tags.some(tag => tag.toLowerCase().includes(query)) ||
+                post.category.toLowerCase().includes(query) ||
+                post.content.toLowerCase().includes(query)
+            ) : true;
+
+            return matchesTag && matchesCategory && matchesSearch;
+        });
+    }, [posts, selectedTag, selectedCategory, searchQuery]);
 
     // Group posts by year and month
     const timeline = useMemo(() => {
@@ -80,35 +135,92 @@ export default function Timeline({ posts, tags }: TimelineProps) {
                     &gt; Chronological archive of all posts
                 </p>
 
-                {/* Tag Filter */}
-                <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
-                    <div className="flex items-center gap-2 text-neon-cyan font-mono text-sm mr-2">
-                        <Filter className="w-4 h-4" />
-                        <span>FILTER:</span>
+                {/* Filters Container */}
+                <div className="flex flex-col gap-6 max-w-2xl mx-auto">
+
+                    {/* Search Input */}
+                    <div className="relative w-full max-w-md mx-auto">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search className="h-4 w-4 text-gray-500" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="SEARCH_ARCHIVES..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-black/50 border border-gray-700 rounded-full text-sm font-mono text-white focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan transition-colors placeholder-gray-600"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-white transition-colors"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
                     </div>
 
-                    {selectedTag && (
-                        <button
-                            onClick={() => setSelectedTag(null)}
-                            className="flex items-center gap-1 px-3 py-1 rounded-full bg-neon-purple/20 text-neon-purple border border-neon-purple/50 hover:bg-neon-purple/30 transition-colors text-xs font-mono"
-                        >
-                            <X className="w-3 h-3" />
-                            CLEAR
-                        </button>
-                    )}
+                    {/* Category Filter */}
+                    <div className="flex flex-wrap justify-center gap-2">
+                        <div className="flex items-center gap-2 text-neon-purple font-mono text-sm mr-2">
+                            <Filter className="w-4 h-4" />
+                            <span>CATEGORY:</span>
+                        </div>
 
-                    {tags.map(tag => (
-                        <button
-                            key={tag}
-                            onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                            className={`px-3 py-1 rounded-full border text-xs font-mono transition-all duration-300 ${selectedTag === tag
+                        {selectedCategory && (
+                            <button
+                                onClick={() => setSelectedCategory(null)}
+                                className="flex items-center gap-1 px-3 py-1 rounded-full bg-neon-purple/20 text-neon-purple border border-neon-purple/50 hover:bg-neon-purple/30 transition-colors text-xs font-mono"
+                            >
+                                <X className="w-3 h-3" />
+                                CLEAR
+                            </button>
+                        )}
+
+                        {categories.map(category => (
+                            <button
+                                key={category}
+                                onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
+                                className={`px-3 py-1 rounded-full border text-xs font-mono transition-all duration-300 ${selectedCategory === category
+                                    ? 'bg-neon-purple/20 text-neon-purple border-neon-purple shadow-[0_0_10px_rgba(188,19,254,0.3)]'
+                                    : 'bg-transparent text-gray-500 border-gray-700 hover:border-neon-purple/50 hover:text-neon-purple'
+                                    }`}
+                            >
+                                {category}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Tag Filter */}
+                    <div className="flex flex-wrap justify-center gap-2">
+                        <div className="flex items-center gap-2 text-neon-cyan font-mono text-sm mr-2">
+                            <Tag className="w-4 h-4" />
+                            <span>TAGS:</span>
+                        </div>
+
+                        {selectedTag && (
+                            <button
+                                onClick={() => setSelectedTag(null)}
+                                className="flex items-center gap-1 px-3 py-1 rounded-full bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50 hover:bg-neon-cyan/30 transition-colors text-xs font-mono"
+                            >
+                                <X className="w-3 h-3" />
+                                CLEAR
+                            </button>
+                        )}
+
+                        {tags.map(tag => (
+                            <button
+                                key={tag}
+                                onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                                className={`px-3 py-1 rounded-full border text-xs font-mono transition-all duration-300 ${selectedTag === tag
                                     ? 'bg-neon-cyan/20 text-neon-cyan border-neon-cyan shadow-[0_0_10px_rgba(0,243,255,0.3)]'
                                     : 'bg-transparent text-gray-500 border-gray-700 hover:border-neon-cyan/50 hover:text-neon-cyan'
-                                }`}
-                        >
-                            #{tag}
-                        </button>
-                    ))}
+                                    }`}
+                            >
+                                #{tag}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -185,6 +297,13 @@ export default function Timeline({ posts, tags }: TimelineProps) {
                                                                             {post.title}
                                                                         </h4>
 
+                                                                        {/* Search Snippet */}
+                                                                        {searchQuery && (
+                                                                            <div className="text-sm text-gray-400 mb-3 font-mono bg-black/30 p-2 rounded border border-gray-800">
+                                                                                {getHighlightSnippet(post.content, searchQuery) || getHighlightSnippet(post.title, searchQuery) || post.excerpt}
+                                                                            </div>
+                                                                        )}
+
                                                                         {/* Metadata */}
                                                                         <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-gray-400 mb-3">
                                                                             <span className="flex items-center gap-1">
@@ -210,8 +329,8 @@ export default function Timeline({ posts, tags }: TimelineProps) {
                                                                                     <span
                                                                                         key={tag}
                                                                                         className={`px-2 py-1 text-xs font-mono border rounded ${selectedTag === tag
-                                                                                                ? 'bg-neon-cyan/20 text-neon-cyan border-neon-cyan'
-                                                                                                : 'bg-neon-cyan/10 text-neon-cyan border-neon-cyan/20'
+                                                                                            ? 'bg-neon-cyan/20 text-neon-cyan border-neon-cyan'
+                                                                                            : 'bg-neon-cyan/10 text-neon-cyan border-neon-cyan/20'
                                                                                             }`}
                                                                                     >
                                                                                         #{tag}

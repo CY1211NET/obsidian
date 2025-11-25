@@ -17,8 +17,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NEXUS_LOG",
+  title: "World of Crain",
   description: "A Dark Sci-Fi Blog System",
+  icons: {
+    icon: '/imgs/favicon.ico',
+  },
 };
 
 export default function RootLayout({

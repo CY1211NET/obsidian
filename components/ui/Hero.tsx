@@ -3,8 +3,11 @@
 import { motion } from 'framer-motion';
 import GlitchText from './GlitchText';
 import NeonButton from './NeonButton';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Hero() {
+    const { t } = useLanguage();
+
     return (
         <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
             {/* Background Elements */}
@@ -21,19 +24,18 @@ export default function Hero() {
                 >
                     <h2 className="text-neon-cyan font-mono text-sm tracking-[0.5em] mb-4">SYSTEM_ONLINE</h2>
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
-                        <GlitchText text="WELCOME TO THE" /> <br />
+                        <GlitchText text={t('hero.welcome')} /> <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan to-neon-purple glow-text-cyan">
-                            VOID
+                            {t('hero.void')}
                         </span>
                     </h1>
                     <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-                        Exploring the boundaries of technology, design, and the digital consciousness.
-                        A collection of thoughts from the edge of the network.
+                        {t('hero.description')}
                     </p>
 
                     <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-                        <NeonButton variant="cyan">Initialize Sequence</NeonButton>
-                        <NeonButton variant="purple">Access Archives</NeonButton>
+                        <NeonButton variant="cyan">{t('hero.init')}</NeonButton>
+                        <NeonButton variant="purple">{t('hero.access')}</NeonButton>
                     </div>
                 </motion.div>
             </div>
