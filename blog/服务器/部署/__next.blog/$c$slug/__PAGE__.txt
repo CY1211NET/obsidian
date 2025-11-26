@@ -1,0 +1,112 @@
+1:"$Sreact.fragment"
+2:I[22016,["/obsidian/_next/static/chunks/ab3b30791f5d8dd6.js","/obsidian/_next/static/chunks/f22459f0d5125eb7.js","/obsidian/_next/static/chunks/4e2f37653ab8fa11.js","/obsidian/_next/static/chunks/d9c7e2788afd5f92.js"],""]
+3:I[52150,["/obsidian/_next/static/chunks/ab3b30791f5d8dd6.js","/obsidian/_next/static/chunks/f22459f0d5125eb7.js","/obsidian/_next/static/chunks/4e2f37653ab8fa11.js","/obsidian/_next/static/chunks/d9c7e2788afd5f92.js"],"default"]
+d:I[26372,["/obsidian/_next/static/chunks/ab3b30791f5d8dd6.js","/obsidian/_next/static/chunks/f22459f0d5125eb7.js","/obsidian/_next/static/chunks/4e2f37653ab8fa11.js","/obsidian/_next/static/chunks/d9c7e2788afd5f92.js"],"default"]
+e:I[59504,["/obsidian/_next/static/chunks/ab3b30791f5d8dd6.js","/obsidian/_next/static/chunks/f22459f0d5125eb7.js","/obsidian/_next/static/chunks/4e2f37653ab8fa11.js","/obsidian/_next/static/chunks/d9c7e2788afd5f92.js"],"default"]
+f:I[97367,["/obsidian/_next/static/chunks/ff1a16fafef87110.js","/obsidian/_next/static/chunks/247eb132b7f7b574.js"],"OutletBoundary"]
+10:"$Sreact.suspense"
+:HL["/obsidian/_next/static/chunks/59c85c7d24baf30a.css","style"]
+4:Tb5e,version: '2.1'
+services:
+  ad_mongodb:
+    image: mongo
+    container_name: ad_mongo
+    restart: always
+    ports:
+      - ${AD_MONGO_PORT}:27017
+    volumes:
+      - ./data/mongo/configdb:/data/configdb
+      - ./data/mongo/db:/data/db
+      - ./data/mongo/log:/var/log/mongodb  # 挂载日志目录
+    [[初始化管理员用户名和密码]]
+    environment:
+     MONGO_INITDB_ROOT_USERNAME: ${AD_MONGO_USER}
+     MONGO_INITDB_ROOT_PASSWORD: ${AD_MONGO_PWD}
+     MONGO_INITDB_DATABASE: ${AD_MONGO_DATABASE}
+    tty: true
+
+  ad_elasticsearch:
+    image: elasticsearch:7.9.3
+    container_name: ad_elasticsearch
+    restart: always
+    environment:
+      - "cluster.name=elasticsearch" [[设置集群名称为elasticsearch]]
+      - "discovery.type=single-node" [[以单一节点模式启动]]
+      - "ES_JAVA_OPTS=-Xms512m -Xmx1024m" [[设置使用jvm内存大小]]
+    volumes:
+      - ./data/elasticsearch/data:/usr/share/elasticsearch/data:rw
+      - ./data/elasticsearch/logs:/user/share/elasticsearch/logs:rw
+      - ./esplugins:/usr/share/elasticsearch/plugins
+    ports:
+      - ${AD_ES_PORT}:9200
+
+  kibana:
+    image: kibana:7.9.3
+    container_name: ad_kibana
+    links:
+      - ad_elasticsearch:elasticsearch [[可以用es这个域名访问elasticsearch服务]]
+    depends_on:
+      - ad_elasticsearch [[kibana在elasticsearch启动之后再启动]]
+    environment:
+      - "elasticsearch.hosts=http://elasticsearch:9200" [[设置访问elasticsearch的地址]]
+    ports:
+      - 5601:5601
+
+  ad_redis:
+    image: redis:latest
+    container_name: ad_redis
+    # 使用配置文件进行启动，可以选择性设置密码requirepass
+    command: redis-server /etc/redis/redis.conf
+    ports:
+      - ${AD_REDIS_PORT}:6379
+    volumes:
+      - ./data/redis:/data
+      - ./data/redis/redis.conf:/etc/redis/redis.conf
+
+  ad_server:
+    image: jarrettluo/all-docs:${AD_SERVER_IMAGE_TAG}
+    container_name: ad_server
+    environment:
+      - REDIS_HOST=${AD_REDIS_HOST}
+      - REDIS_PORT=${AD_REDIS_PORT}
+      - REDIS_USER=${AD_REDIS_USER}
+      - REDIS_PWD=${AD_REDIS_PWD}
+      - MONGO_HOST=${AD_MONGO_HOST}
+      - MONGO_PORT=${AD_MONGO_PORT}
+      - MONGO_USER=${AD_MONGO_USER}
+      - MONGO_PWD=${AD_MONGO_PWD}
+      - ES_HOST=${AD_ES_HOST}
+      - ES_PORT=${AD_ES_PORT}
+      - ES_USER=${AD_ES_USER}
+      - ES_PWD=${AD_ES_PWD}
+      - 'TZ="Asia/Shanghai"'
+    ports:
+      - ${AD_SERVER_PORT}:8082
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "localhost", "8082"]
+      interval: 6s
+      timeout: 10s
+      retries: 20
+    depends_on:
+      - ad_mongodb
+      - ad_redis
+
+  ad_web:
+    image: jarrettluo/all-docs-web:${AD_SERVER_IMAGE_TAG}
+    container_name: ad_web
+    external_links:
+      - ad_server:ad-server
+    ports:
+      - ${AD_WEB_PORT}:80
+    depends_on:
+      - ad_server
+0:{"buildId":"3FWjTS44k5p85_X43indx","rsc":["$","$1","c",{"children":[["$","article",null,{"className":"min-h-screen pb-20 pt-10","children":["$","div",null,{"className":"max-w-7xl mx-auto px-4","children":[["$","$L2",null,{"href":"/","className":"inline-flex items-center gap-2 text-gray-500 hover:text-neon-cyan transition-colors mb-8 group","children":[["$","svg",null,{"xmlns":"http://www.w3.org/2000/svg","width":24,"height":24,"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","className":"lucide lucide-arrow-left w-4 h-4 group-hover:-translate-x-1 transition-transform","aria-hidden":"true","children":[["$","path","1l729n",{"d":"m12 19-7-7 7-7"}],["$","path","x3x0zl",{"d":"M19 12H5"}],"$undefined"]}],["$","span",null,{"className":"font-mono text-sm","children":"RETURN_TO_GRID"}]]}],["$","div",null,{"className":"grid grid-cols-1 lg:grid-cols-[1fr_250px] gap-12","children":[["$","div",null,{"className":"min-w-0","children":[["$","header",null,{"className":"mb-12 border-b border-white/10 pb-12 relative","children":[["$","div",null,{"className":"flex flex-wrap items-center gap-4 mb-6 text-sm font-mono","children":[["$","span",null,{"className":"flex items-center gap-2 text-neon-purple bg-neon-purple/10 px-3 py-1 rounded border border-neon-purple/20","children":[["$","svg",null,{"xmlns":"http://www.w3.org/2000/svg","width":24,"height":24,"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","className":"lucide lucide-tag w-3 h-3","aria-hidden":"true","children":[["$","path","vktsd0",{"d":"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"}],["$","circle","kqv944",{"cx":"7.5","cy":"7.5","r":".5","fill":"currentColor"}],"$undefined"]}],"Linux"]}],["$","span",null,{"className":"flex items-center gap-2 text-gray-400","children":[["$","svg",null,{"xmlns":"http://www.w3.org/2000/svg","width":24,"height":24,"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","className":"lucide lucide-calendar w-3 h-3","aria-hidden":"true","children":[["$","path","1cmpym",{"d":"M8 2v4"}],["$","path","4m81vk",{"d":"M16 2v4"}],["$","rect","1hopcy",{"width":"18","height":"18","x":"3","y":"4","rx":"2"}],["$","path","8toen8",{"d":"M3 10h18"}],"$undefined"]}],"2025-11-16 00:00:00+08:00"]}],["$","span",null,{"className":"flex items-center gap-2 text-gray-400","children":[["$","svg",null,{"xmlns":"http://www.w3.org/2000/svg","width":24,"height":24,"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","strokeWidth":2,"strokeLinecap":"round","strokeLinejoin":"round","className":"lucide lucide-clock w-3 h-3","aria-hidden":"true","children":[["$","path","mmk7yg",{"d":"M12 6v6l4 2"}],["$","circle","1mglay",{"cx":"12","cy":"12","r":"10"}],"$undefined"]}],"2 MIN READ"]}]]}],["$","h1",null,{"className":"text-4xl md:text-5xl font-bold text-foreground mb-6 leading-tight glow-text-cyan","children":"部署"}],["$","div",null,{"className":"absolute -bottom-[1px] left-0 w-20 h-[1px] bg-neon-cyan box-shadow-glow"}]]}],["$","div",null,{"className":"content-frame mb-20","children":["$","div",null,{"className":"prose dark:prose-invert prose-lg max-w-none prose-headings:font-mono prose-headings:text-neon-cyan prose-a:text-neon-purple hover:prose-a:text-neon-cyan prose-code:text-neon-cyan prose-pre:bg-transparent prose-pre:border-none prose-pre:p-0","children":[["$","$L3","pre-0",{"children":["$","code","code-0",{"className":"hljs language-d","children":"$4"}]}],"\n","$L5"]}]}],"$L6","$L7"]}],"$L8"]}]]}]}],["$L9","$La","$Lb"],"$Lc"]}],"loading":null,"isPartial":false}
+5:["$","p","p-0",{"children":"问题：1.这几个中间件镜像是直接拉取然后按照这个文件启动就可以了吗\r\n2.ad_server和ad_web是否需要\r\n3.除此以外还需要部署的模块是\r\nnacos\r\ndocument\r\nproject\r\n还有其他的模块吗？\r\n4.jar打包为容器之后需要有什么修改吗？\r\n5.容器之间是不需要会直接调用吗?\r\n6.web模块的部署怎么部署需要有什么修改吗，容器需要什么服务吗"}]
+6:["$","div",null,{"className":"mt-20 pt-10 border-t border-white/10 flex justify-between items-center text-xs font-mono text-gray-600","children":[["$","span",null,{"children":"END_OF_FILE"}],["$","span",null,{"children":["SLUG: ","服务器/部署"]}]]}]
+7:["$","$Ld",null,{"path":"/blog/服务器/部署"}]
+8:["$","aside",null,{"className":"hidden lg:block","children":["$","$Le",null,{"headings":[]}]}]
+9:["$","link","0",{"rel":"stylesheet","href":"/obsidian/_next/static/chunks/59c85c7d24baf30a.css","precedence":"next"}]
+a:["$","script","script-0",{"src":"/obsidian/_next/static/chunks/4e2f37653ab8fa11.js","async":true}]
+b:["$","script","script-1",{"src":"/obsidian/_next/static/chunks/d9c7e2788afd5f92.js","async":true}]
+c:["$","$Lf",null,{"children":["$","$10",null,{"name":"Next.MetadataOutlet","children":"$@11"}]}]
+11:null
