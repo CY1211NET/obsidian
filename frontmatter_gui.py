@@ -47,8 +47,8 @@ class FrontMatterGUI:
         ttk.Button(self.left_toolbar, text="📂 打开目录", command=self.select_directory).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.left_toolbar, text="🔄 刷新", command=self.refresh_list).pack(side=tk.LEFT, padx=2)
         
-        # File Treeview
-        self.tree = ttk.Treeview(self.left_frame, columns=("status"), show="tree headings")
+        # File Treeview - Enable extended selection
+        self.tree = ttk.Treeview(self.left_frame, columns=("status"), show="tree headings", selectmode="extended")
         self.tree.heading("#0", text="文件列表")
         self.tree.heading("status", text="状态")
         self.tree.column("status", width=50)
@@ -79,7 +79,7 @@ class FrontMatterGUI:
         ttk.Button(self.button_frame, text="✨ 自动填充缺失", command=self.auto_fill).pack(side=tk.RIGHT, padx=5)
         
         # Preview Area
-        self.preview_frame = ttk.LabelFrame(self.right_frame, text="YAML 预览")
+        self.preview_frame = ttk.LabelFrame(self.right_frame, text="YAML 预览 / 状态")
         self.preview_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
         self.preview_text = tk.Text(self.preview_frame, height=10, font=("Consolas", 10))
@@ -173,17 +173,23 @@ class FrontMatterGUI:
         if not selection:
             return
             
-        item = selection[0]
-        tags = self.tree.item(item, "tags")
+        self.selected_files = []
+        for item in selection:
+            tags = self.tree.item(item, "tags")
+            if tags:
+                self.selected_files.append(Path(tags[0]))
         
-        if not tags:
-            return # Probably a directory
-            
-        filepath = Path(tags[0])
-        self.load_file(filepath)
+        if not self.selected_files:
+            return
+
+        if len(self.selected_files) == 1:
+            self.load_file(self.selected_files[0])
+        else:
+            self.enter_batch_mode()
 
     def load_file(self, filepath):
         self.current_file = filepath
+        self.editor_container.configure(text=f"编辑: {filepath.name}")
         
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -209,6 +215,25 @@ class FrontMatterGUI:
             
         self.update_preview()
 
+    def enter_batch_mode(self):
+        self.current_file = None
+        self.editor_container.configure(text=f"批量编辑: 已选择 {len(self.selected_files)} 个文件")
+        
+        # Clear all fields
+        for entry in self.entries.values():
+            entry.delete(0, tk.END)
+            
+        self.preview_text.delete('1.0', tk.END)
+        msg = (
+            f"=== 批量编辑模式 ===\n"
+            f"已选择 {len(self.selected_files)} 个文件。\n\n"
+            f"⚠️ 注意：\n"
+            f"1. 在上方输入框中填写要修改的字段。\n"
+            f"2. 留空的字段将保持原样，不会被修改。\n"
+            f"3. 点击'保存更改'将应用到所有选中的文件。\n"
+        )
+        self.preview_text.insert('1.0', msg)
+
     def get_form_data(self):
         data = {}
         for key, entry in self.entries.items():
@@ -223,6 +248,19 @@ class FrontMatterGUI:
         return data
 
     def update_preview(self, event=None):
+        if len(getattr(self, 'selected_files', [])) > 1:
+            # Batch mode preview
+            data = self.get_form_data()
+            if not data:
+                self.enter_batch_mode() # Reset text
+                return
+                
+            preview = "=== 将要应用到所有选中文件的更改 ===\n\n"
+            preview += yaml.dump(data, allow_unicode=True, default_flow_style=False, sort_keys=False)
+            self.preview_text.delete('1.0', tk.END)
+            self.preview_text.insert('1.0', preview)
+            return
+
         if not self.current_file:
             return
             
@@ -233,6 +271,10 @@ class FrontMatterGUI:
         self.preview_text.insert('1.0', preview)
 
     def auto_fill(self):
+        if len(getattr(self, 'selected_files', [])) > 1:
+            messagebox.showinfo("提示", "批量模式下不支持自动填充，请逐个文件操作。")
+            return
+
         if not self.current_file:
             return
             
@@ -256,6 +298,58 @@ class FrontMatterGUI:
         messagebox.showinfo("提示", "已自动填充缺失字段")
 
     def save_changes(self):
+        selected = getattr(self, 'selected_files', [])
+        if not selected:
+            return
+
+        # Batch Save
+        if len(selected) > 1:
+            data = self.get_form_data()
+            if not data:
+                messagebox.showwarning("警告", "没有输入任何更改。请填写至少一个字段。")
+                return
+                
+            if not messagebox.askyesno("确认", f"确定要修改 {len(selected)} 个文件吗？\n此操作将更新所有选中文件的指定字段。"):
+                return
+                
+            success_count = 0
+            errors = []
+            
+            for filepath in selected:
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    frontmatter, _, body = self.manager.parse_frontmatter(content)
+                    if frontmatter is None:
+                        frontmatter = {}
+                        
+                    # Update fields
+                    frontmatter.update(data)
+                    
+                    # Generate new content
+                    fm_str = self.manager.generate_frontmatter(frontmatter)
+                    new_content = fm_str + body
+                    
+                    with open(filepath, 'w', encoding='utf-8') as f:
+                        f.write(new_content)
+                        
+                    success_count += 1
+                except Exception as e:
+                    errors.append(f"{filepath.name}: {e}")
+            
+            msg = f"成功更新 {success_count} 个文件。"
+            if errors:
+                msg += f"\n\n失败 {len(errors)} 个:\n" + "\n".join(errors)
+                messagebox.showwarning("部分完成", msg)
+            else:
+                messagebox.showinfo("成功", msg)
+                
+            # Refresh to show updates (optional, but good practice)
+            # self.refresh_list() # Might lose selection, so maybe not
+            return
+
+        # Single File Save
         if not self.current_file:
             return
             
@@ -270,7 +364,7 @@ class FrontMatterGUI:
                 
             messagebox.showinfo("成功", f"已保存文件: {self.current_file.name}")
             
-            # Update tree status (optional)
+            # Update tree status
             selection = self.tree.selection()
             if selection:
                 self.tree.set(selection[0], "status", "✅")

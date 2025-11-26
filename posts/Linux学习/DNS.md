@@ -1,7 +1,7 @@
 ---
 title: DNS
 date: '2025-06-20'
-category: Linux学习
+category: Linux
 tags:
 - Linux
 draft: false

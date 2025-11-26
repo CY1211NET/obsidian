@@ -1,7 +1,7 @@
 ---
 title: VMware配置ssh服务
 date: '2025-06-16'
-category: Linux学习
+category: Linux
 tags:
 - Linux
 draft: false

@@ -33,7 +33,14 @@ export default function Comments({ path }: CommentsProps) {
         });
 
         return () => {
-            walineInstance.destroy();
+            if (walineInstance) {
+                try {
+                    walineInstance.destroy();
+                } catch (e) {
+                    // Ignore AbortError which can happen if cleanup runs while requests are pending
+                    console.warn('Waline destroy error:', e);
+                }
+            }
         };
     }, [path]);
 

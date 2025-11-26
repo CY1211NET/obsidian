@@ -1,9 +1,9 @@
 ---
 title: Tail命令使用
 date: '2025-05-15'
-category: Linux学习
+category: Linux
 tags:
-- 'Linux'
+- Linux
 draft: false
 author: Crain
 ---

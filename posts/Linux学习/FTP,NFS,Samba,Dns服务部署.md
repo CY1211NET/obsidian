@@ -1,7 +1,7 @@
 ---
 title: FTP,NFS,Samba,Dns服务部署
 date: '2025-06-19'
-category: Linux学习
+category: Linux
 tags:
 - Linux
 draft: false

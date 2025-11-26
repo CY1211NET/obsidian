@@ -1,10 +1,10 @@
 ---
 title: Linux运行C语言
 date: '2025-06-17'
-category: Linux学习
+category: Linux
 tags:
 - Linux
-- 'C语言'
+- C语言
 draft: false
 author: Crain
 ---
