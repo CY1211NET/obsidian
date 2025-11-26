@@ -20,7 +20,7 @@ interface KnowledgeGraphProps {
 
 export default function KnowledgeGraph({ posts }: KnowledgeGraphProps) {
     const { theme } = useTheme();
-    const fgRef = useRef<any>();
+    const fgRef = useRef<any>(null);
     const [selectedNode, setSelectedNode] = useState<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [graphDimensions, setGraphDimensions] = useState({ width: 800, height: 600 });

@@ -1,11 +1,13 @@
 import { Github, Twitter, Linkedin, Mail, Youtube, MessageCircle, MessageSquare } from 'lucide-react';
 
+const basePath = process.env.NODE_ENV === 'production' ? '/obsidian' : '';
+
 export const siteConfig = {
     author: {
         name: "NEXUS_ADMIN",
         bio: "Digital architect exploring the boundaries of the void. Specializing in cybernetic interfaces and neural networks.",
         bio_zh: "探索虚空边界的数字架构师。专注于控制论接口和神经网络。",
-        avatar: "/imgs/mmexport1762949235080.png",
+        avatar: `${basePath}/imgs/mmexport1762949235080.png`,
         location: "Neo-Tokyo, Sector 7",
     },
     socials: [
@@ -28,13 +30,13 @@ export const siteConfig = {
             name: "WeChat",
             url: "#",
             icon: MessageCircle,
-            qrCode: "/imgs/mmqrcode1764071303278.png",
+            qrCode: `${basePath}/imgs/mmqrcode1764071303278.png`,
         },
         {
             name: "QQ",
             url: "#",
             icon: MessageSquare,
-            qrCode: "/imgs/Image_1764071428006.png",
+            qrCode: `${basePath}/imgs/Image_1764071428006.png`,
         },
     ],
     friends: [
@@ -42,7 +44,7 @@ export const siteConfig = {
             name: "叶子的blog",
             url: "https://blog.oksanye.com/",
             description: "这是我的好朋友，请点击传送门去到他的世界",
-            avatar: "/avatar-placeholder.jpg",
+            avatar: `${basePath}/avatar-placeholder.jpg`,
         },
     ],
 };

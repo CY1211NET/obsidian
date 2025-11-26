@@ -21,6 +21,7 @@ export default function Comments({ path }: CommentsProps) {
             serverURL: "http://47.114.103.174:8360",
             path: path,
             dark: 'html.dark', // Auto dark mode support based on html class
+            // @ts-ignore
             placeholder: "请文明发言哟 ヾ(≧▽≦*)o",
             sofa: "快来发表你的意见吧 (≧∀≦)ゞ",
             emoji: false,

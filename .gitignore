@@ -39,3 +39,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+/__pycache__/
+*.py
+
+# python env
+.venv/
+
+# generated files
+public/search.json
+test-output.txt
+
+# system & editor
+.vscode/
+.idea/
+Thumbs.db
+
+
+
+
