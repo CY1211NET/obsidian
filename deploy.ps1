@@ -2,7 +2,12 @@
 # 运行方式: .\deploy.ps1
 $ErrorActionPreference = 'Stop'
 
-# 1. 构建项目
+# 1. 清理并构建项目
+if (Test-Path "out") {
+    Write-Host "正在清理旧的构建文件..."
+    Remove-Item -Recurse -Force "out"
+}
+
 Write-Host "正在构建项目..."
 npm run build
 
