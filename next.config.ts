@@ -3,9 +3,8 @@ import type { NextConfig } from "next";
 const isProd = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
-  // 1. 将 "export" 修改为 "standalone"
-  output: "export",
-  // basePath已被移除以适配 Cloudflare 根目录
+  // 只在生产构建时启用静态导出，开发模式下不设置（避免 Turbopack 对中文 URL 的匹配 bug）
+  ...(isProd ? { output: "export" } : {}),
   images: {
     unoptimized: true,
   },
