@@ -1,31 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  /* Premium Light Theme - High Contrast */
-  --background: #e5e5e5;
-  /* Gray background */
-  --foreground: #000000;
-  /* Pure Black for maximum clarity */
-  --neon-cyan: #006064;
-  /* Darker Teal */
-  --neon-purple: #4a148c;
-  /* Darker Purple */
-  --glass-border: rgba(0, 0, 0, 0.2);
-  /* Much stronger border color */
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  /* More opaque background */
-  --grid-color: rgba(0, 0, 0, 0.06);
-  --panel-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  /* VS Code Light Theme Inspired */
+  --background: #ffffff;
+  --foreground: #3b3b3b;
+  --neon-cyan: #007acc; /* VS Code Blue Accent */
+  --neon-purple: #a31515; /* VS Code String Accent */
+  --glass-border: rgba(204, 204, 204, 0.6);
+  --glass-bg: rgba(250, 250, 250, 0.85);
+  --grid-color: rgba(0, 0, 0, 0.04);
+  --panel-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   /* Waline Light Theme */
   --waline-theme-color: var(--neon-cyan);
   --waline-active-color: var(--neon-purple);
-  --waline-bgcolor: var(--glass-bg);
-  --waline-bgcolor-light: rgba(255, 255, 255, 0.5);
+  --waline-bgcolor: #ffffff;
+  --waline-bgcolor-light: #f3f3f3;
   --waline-border-color: var(--glass-border);
-  --waline-disable-bgcolor: rgba(0, 0, 0, 0.05);
-  --waline-info-bgcolor: rgba(0, 0, 0, 0.05);
-  --waline-info-color: var(--foreground);
+  --waline-disable-bgcolor: #f3f3f3;
+  --waline-info-bgcolor: #f3f3f3;
+  --waline-info-color: #616161;
 }
 
 .dark {
@@ -165,11 +159,11 @@ body::before {
   border-collapse: collapse;
   margin: 2rem 0;
   font-size: 0.9rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
 }
 
 .prose thead {
-  background: rgba(0, 243, 255, 0.1);
+  background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
   border-bottom: 1px solid var(--neon-cyan);
 }
 
@@ -184,22 +178,22 @@ body::before {
 
 .prose td {
   padding: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: #d1d5db;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  color: color-mix(in srgb, var(--foreground) 90%, transparent);
 }
 
 .prose tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
 }
 
 /* Blockquotes */
 .prose blockquote {
   border-left: 4px solid var(--neon-purple);
-  background: rgba(188, 19, 254, 0.05);
+  background: color-mix(in srgb, var(--neon-purple) 6%, transparent);
   padding: 1.5rem;
   margin: 2rem 0;
   font-style: italic;
-  color: #e5e7eb;
+  color: color-mix(in srgb, var(--foreground) 80%, transparent);
   border-radius: 0 0.5rem 0.5rem 0;
   position: relative;
 }
@@ -212,7 +206,7 @@ body::before {
   font-family: var(--font-geist-mono);
   font-size: 0.7rem;
   color: var(--neon-purple);
-  background: #050505;
+  background: var(--background);
   padding: 0 0.5rem;
 }
 
