@@ -77,7 +77,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                                 </span>
                                 <span className="flex items-center gap-2 text-gray-400">
                                     <Calendar className="w-3 h-3" />
-                                    {post.date}
+                                    {post.updatedAt || post.date}
                                 </span>
                                 <span className="flex items-center gap-2 text-gray-400">
                                     <Clock className="w-3 h-3" />

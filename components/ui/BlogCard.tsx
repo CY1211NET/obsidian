@@ -29,7 +29,7 @@ export default function BlogCard({ post, index }: { post: PostData; index: numbe
                                 <Tag className="w-3 h-3" />
                                 {post.category}
                             </span>
-                            <span className="text-xs font-mono text-gray-500">{post.date}</span>
+                            <span className="text-xs font-mono text-gray-500">{post.updatedAt || post.date}</span>
                         </div>
 
                         <h3 className="text-xl font-bold mb-3 text-foreground group-hover:text-neon-cyan transition-colors line-clamp-2">

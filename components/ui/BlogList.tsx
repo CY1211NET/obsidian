@@ -183,7 +183,7 @@ export default function BlogList({ posts, allTags, allCategories }: BlogListProp
                                                 <span>//</span>
                                                 <span className="flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" />
-                                                    {post.date}
+                                                    {post.updatedAt || post.date}
                                                 </span>
                                                 <span>//</span>
                                                 <span className="flex items-center gap-1 text-neon-cyan">
