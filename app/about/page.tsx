@@ -67,32 +67,44 @@ export default function AboutPage() {
                                     {siteConfig.socials.map((social) => {
                                         // @ts-ignore - qrCode might not exist on all items
                                         const hasQr = social.qrCode;
+                                        // @ts-ignore - tooltip might not exist on all items
+                                        const tooltip = social.tooltip;
+
+                                        const tooltipEl = tooltip ? (
+                                            <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded bg-black/90 border border-neon-cyan/30 text-neon-cyan text-xs font-mono whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 shadow-lg">
+                                                {tooltip}
+                                            </span>
+                                        ) : null;
 
                                         if (hasQr) {
                                             return (
-                                                <button
-                                                    key={social.name}
-                                                    // @ts-ignore
-                                                    onClick={() => setSelectedQr(social.qrCode)}
-                                                    className="flex items-center gap-2 text-sm font-mono text-gray-400 hover:text-neon-cyan transition-colors border border-white/10 px-3 py-1.5 rounded hover:border-neon-cyan/50"
-                                                >
-                                                    <social.icon className="w-4 h-4" />
-                                                    {social.name}
-                                                </button>
+                                                <div key={social.name} className="relative group">
+                                                    {tooltipEl}
+                                                    <button
+                                                        // @ts-ignore
+                                                        onClick={() => setSelectedQr(social.qrCode)}
+                                                        className="flex items-center gap-2 text-sm font-mono text-gray-400 hover:text-neon-cyan transition-colors border border-white/10 px-3 py-1.5 rounded hover:border-neon-cyan/50"
+                                                    >
+                                                        <social.icon className="w-4 h-4" />
+                                                        {social.name}
+                                                    </button>
+                                                </div>
                                             );
                                         }
 
                                         return (
-                                            <a
-                                                key={social.name}
-                                                href={social.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-2 text-sm font-mono text-gray-400 hover:text-neon-cyan transition-colors border border-white/10 px-3 py-1.5 rounded hover:border-neon-cyan/50"
-                                            >
-                                                <social.icon className="w-4 h-4" />
-                                                {social.name}
-                                            </a>
+                                            <div key={social.name} className="relative group">
+                                                {tooltipEl}
+                                                <a
+                                                    href={social.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-2 text-sm font-mono text-gray-400 hover:text-neon-cyan transition-colors border border-white/10 px-3 py-1.5 rounded hover:border-neon-cyan/50"
+                                                >
+                                                    <social.icon className="w-4 h-4" />
+                                                    {social.name}
+                                                </a>
+                                            </div>
                                         );
                                     })}
                                 </div>

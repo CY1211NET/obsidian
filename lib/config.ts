@@ -16,28 +16,33 @@ export const siteConfig = {
             name: "GitHub",
             url: "https://github.com/CY1211NET",
             icon: Github,
+            tooltip: "https://github.com/CY1211NET",
         },
         {
             name: "Email",
             url: "mailto:y252840@163.com",
             icon: Mail,
+            tooltip: "y252840@163.com",
         },
         {
             name: "Twitter",
             url: "https://x.com/chny70791654",
             icon: Twitter,
+            tooltip: "https://x.com/chny70791654"
         },
         {
             name: "WeChat",
             url: "",
             icon: MessageCircle,
             qrCode: `${basePath}/imgs/wechat.png`,
+            tooltip: "CYOUNG1211",
         },
         {
             name: "QQ",
             url: "#",
             icon: MessageSquare,
             qrCode: `${basePath}/imgs/qq.png`,
+            tooltip: "2604540977",
         },
     ],
     friends: [
