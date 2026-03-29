@@ -19,7 +19,9 @@ interface PageProps {
 export async function generateStaticParams() {
     const posts = getSortedPostsData();
     return posts.map((post) => ({
-        slug: post.slug.split('/'),
+        // Next.js (尤其是开启了 output: export 后) 对中文 URL 可能会进行严格的 encoded 匹配，
+        // 因此我们要把静态生成的参数预先进行 encodeURIComponent 编码。
+        slug: post.slug.split('/').map(part => encodeURIComponent(part)),
     }));
 }
 
