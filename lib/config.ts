@@ -8,7 +8,7 @@ export const siteConfig = {
         name: "NEXUS_ADMIN",
         bio: "Digital architect exploring the boundaries of the void. Specializing in cybernetic interfaces and neural networks.",
         bio_zh: "探索虚空边界的数字架构师。专注于控制论接口和神经网络。",
-        avatar: `${basePath}/imgs/mmexport1762949235080.png`,
+        avatar: `${basePath}/imgs/headshots.png`,
         location: "Neo-Tokyo, Sector 7",
     },
     socials: [
@@ -29,15 +29,15 @@ export const siteConfig = {
         },
         {
             name: "WeChat",
-            url: "#",
+            url: "",
             icon: MessageCircle,
-            qrCode: `${basePath}/imgs/mmqrcode1764071303278.png`,
+            qrCode: `${basePath}/imgs/wechat.png`,
         },
         {
             name: "QQ",
             url: "#",
             icon: MessageSquare,
-            qrCode: `${basePath}/imgs/Image_1764071428006.png`,
+            qrCode: `${basePath}/imgs/qq.png`,
         },
     ],
     friends: [
@@ -45,7 +45,7 @@ export const siteConfig = {
             name: "叶子的blog",
             url: "https://blog.oksanye.com/",
             description: "这是我的好朋友，请点击传送门去到他的世界",
-            avatar: `${basePath}/avatar-placeholder.jpg`,
+            avatar: `${basePath}/imgs/headshots.png`,
         },
     ],
 };
