@@ -1,6 +1,6 @@
 import { getSortedPostsData, getPostData } from "@/lib/posts";
 import { notFound } from "next/navigation";
-import { Calendar, Clock, Tag, ArrowLeft } from "lucide-react";
+import { Calendar, Clock, Tag, ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
@@ -77,8 +77,14 @@ export default async function BlogPostPage({ params }: PageProps) {
                                 </span>
                                 <span className="flex items-center gap-2 text-gray-400">
                                     <Calendar className="w-3 h-3" />
-                                    {post.updatedAt || post.date}
+                                    {post.date}
                                 </span>
+                                {post.updatedAt && (
+                                    <span className="flex items-center gap-2 text-gray-400">
+                                        <RefreshCw className="w-3 h-3" />
+                                        {post.updatedAt}
+                                    </span>
+                                )}
                                 <span className="flex items-center gap-2 text-gray-400">
                                     <Clock className="w-3 h-3" />
                                     {post.readTime || '5 MIN READ'}

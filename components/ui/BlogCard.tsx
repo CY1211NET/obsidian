@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Clock, Tag } from 'lucide-react';
+import { ArrowRight, Clock, Tag, RefreshCw } from 'lucide-react';
 import { PostData } from '@/lib/posts';
 
 export default function BlogCard({ post, index }: { post: PostData; index: number }) {
@@ -29,7 +29,16 @@ export default function BlogCard({ post, index }: { post: PostData; index: numbe
                                 <Tag className="w-3 h-3" />
                                 {post.category}
                             </span>
-                            <span className="text-xs font-mono text-gray-500">{post.updatedAt || post.date}</span>
+                            <div className="flex items-center gap-2 text-xs font-mono text-gray-500">
+                                <span>{post.date}</span>
+                                {post.updatedAt && (
+                                    <>
+                                        <span className="text-gray-600">|</span>
+                                        <RefreshCw className="w-3 h-3" />
+                                        <span>{post.updatedAt}</span>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         <h3 className="text-xl font-bold mb-3 text-foreground group-hover:text-neon-cyan transition-colors line-clamp-2">
