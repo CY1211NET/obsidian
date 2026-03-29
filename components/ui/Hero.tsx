@@ -33,10 +33,7 @@ export default function Hero() {
                         {t('hero.description')}
                     </p>
 
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-                        <NeonButton variant="cyan">{t('hero.init')}</NeonButton>
-                        <NeonButton variant="purple">{t('hero.access')}</NeonButton>
-                    </div>
+
                 </motion.div>
             </div>
 
