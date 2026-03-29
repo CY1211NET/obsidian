@@ -86,10 +86,4 @@ public boolean isMongoAlive() {
 }
 ```
 
----
 
-### 💡 提示
-
-如果你使用的是 Docker Compose，可查看 `docker-compose.yml` 中 MongoDB 的端口映射、环境变量配置等是否正确。
-
----

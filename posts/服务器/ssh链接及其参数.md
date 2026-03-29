@@ -1,6 +1,6 @@
 ---
 title: ssh链接及其参数
-date: '2025-11-16 00:00:00+08:00'
+date: '2024-10-12 00:00:00+08:00'
 category: Linux
 tags:
 - Linux

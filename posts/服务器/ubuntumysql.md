@@ -1,6 +1,6 @@
 ---
-title: ubuntumysql
-date: '2025-11-16 00:00:00+08:00'
+title: Ubuntu-Mysql安装
+date: '2024-9-1 00:00:00+08:00'
 category: Linux
 tags:
 - sql
@@ -8,7 +8,7 @@ tags:
 draft: false
 author: Crain
 ---
-在 Ubuntu 上安装 MySQL，可以按照以下步骤进行操作。这些步骤适用于大多数基于 `apt` 的发行版（如 Ubuntu 20.04、22.04 等）。
+
 
 ---
 

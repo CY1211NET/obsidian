@@ -1,15 +1,13 @@
 ---
 title: docker-compsoe安装
-date: '2025-11-16 00:00:00+08:00'
+date: '2024-8-16 00:00:00+08:00'
 category: Linux
 tags:
 - docker
 draft: false
 author: Crain
 ---
-从截图来看，`docker-compose --version` 的输出表明你的 Docker Compose 版本为 **1.29.2**，但构建信息显示为 `build unknown`。
 
-这是因为使用系统包管理器（如 `apt`）安装的 Docker Compose 可能缺少构建元数据。这通常不会影响 Docker Compose 的正常使用。
 
 ### 如果需要升级到最新版本：
 
@@ -86,6 +84,3 @@ author: Crain
 which docker-compose
 ```
 
-确保使用的是正确的可执行文件路径。
-
-尝试以上步骤后，如果还有问题，欢迎随时告知！

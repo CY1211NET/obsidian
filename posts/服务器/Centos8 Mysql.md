@@ -1,6 +1,6 @@
 ---
-title: Centos8 Mysql
-date: '2025-11-16 00:00:00+08:00'
+title: Centos8-Mysql安装
+date: '2023-11-16 00:00:00+08:00'
 updated: '2025-11-16'
 category: Liunx
 tags:
@@ -9,7 +9,7 @@ tags:
 draft: false
 author: Crain
 ---
-在 CentOS 8 上安装 MySQL 的步骤如下：
+
 
 ### 1. 安装 MySQL 官方仓库
 
@@ -82,4 +82,3 @@ sudo firewall-cmd --zone=public --add-port=3306/tcp --permanent
 sudo firewall-cmd --reload
 ```
 
-这样，MySQL 就安装并配置完成了。如果你有其他问题或需要进一步帮助，请告诉我！
