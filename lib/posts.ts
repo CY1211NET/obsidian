@@ -143,6 +143,15 @@ export function getAllTags(): string[] {
     return Array.from(tags);
 }
 
+export function getAllCategories(): string[] {
+    const posts = getSortedPostsData();
+    const categories = new Set<string>();
+    posts.forEach((post) => {
+        if (post.category) categories.add(post.category);
+    });
+    return Array.from(categories);
+}
+
 // Get posts grouped by year and month for timeline
 export function getPostsTimeline() {
     const posts = getSortedPostsData();

@@ -1,11 +1,12 @@
 import Hero from "@/components/ui/Hero";
 import BlogList from "@/components/ui/BlogList";
-import { getSortedPostsData, getAllTags } from "@/lib/posts";
+import { getSortedPostsData, getAllTags, getAllCategories } from "@/lib/posts";
 import KnowledgeGraphWrapper from "@/components/ui/KnowledgeGraphWrapper";
 
 export default function Home() {
   const posts = getSortedPostsData();
   const allTags = getAllTags();
+  const allCategories = getAllCategories();
 
   return (
     <div className="min-h-screen pb-20">
@@ -32,7 +33,7 @@ export default function Home() {
           <div className="h-px flex-grow bg-white/10 ml-6" />
         </div>
 
-        <BlogList posts={posts} allTags={allTags} />
+        <BlogList posts={posts} allTags={allTags} allCategories={allCategories} />
       </section>
     </div>
   );

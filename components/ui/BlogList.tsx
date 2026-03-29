@@ -4,56 +4,99 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BlogCard from './BlogCard';
 import { PostData } from '@/lib/posts';
-import { Tag, Filter, LayoutGrid, List, Calendar, Clock, ArrowRight } from 'lucide-react';
+import { Tag, Filter, LayoutGrid, List, Calendar, Clock, ArrowRight, FolderOpen } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import Link from 'next/link';
 
 interface BlogListProps {
     posts: PostData[];
     allTags: string[];
+    allCategories: string[];
 }
 
-export default function BlogList({ posts, allTags }: BlogListProps) {
+export default function BlogList({ posts, allTags, allCategories }: BlogListProps) {
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const { t } = useLanguage();
 
-    const filteredPosts = selectedTag
-        ? posts.filter((post) => post.tags.includes(selectedTag))
-        : posts;
+    const filteredPosts = posts.filter((post) => {
+        const matchesCategory = selectedCategory ? post.category === selectedCategory : true;
+        const matchesTag = selectedTag ? post.tags.includes(selectedTag) : true;
+        return matchesCategory && matchesTag;
+    });
 
     return (
         <div>
             {/* Filter and View Toggle Header */}
             <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                {/* Tag Filter */}
-                <div className="flex-1">
+                {/* Filters */}
+                <div className="flex-1 space-y-4">
                     <div className="flex items-center gap-2 mb-4 text-neon-cyan font-mono text-sm">
                         <Filter className="w-4 h-4" />
                         <span>FILTER_SYSTEM</span>
                     </div>
-                    <div className="flex flex-wrap gap-3">
-                        <button
-                            onClick={() => setSelectedTag(null)}
-                            className={`px-4 py-2 rounded border font-mono text-xs transition-all duration-300 ${selectedTag === null
-                                ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan shadow-[0_0_10px_rgba(0,243,255,0.3)]'
-                                : 'border-white/10 text-gray-500 hover:border-white/30 hover:text-gray-300'
-                                }`}
-                        >
-                            ALL_LOGS
-                        </button>
-                        {allTags.map((tag) => (
+
+                    {/* Category Filter */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-2 text-neon-cyan font-mono text-xs opacity-70">
+                            <FolderOpen className="w-3 h-3" />
+                            <span>CATEGORY</span>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
                             <button
-                                key={tag}
-                                onClick={() => setSelectedTag(tag)}
-                                className={`px-4 py-2 rounded border font-mono text-xs transition-all duration-300 ${selectedTag === tag
+                                onClick={() => setSelectedCategory(null)}
+                                className={`px-4 py-2 rounded border font-mono text-xs transition-all duration-300 ${selectedCategory === null
+                                    ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan shadow-[0_0_10px_rgba(0,243,255,0.3)]'
+                                    : 'border-white/10 text-gray-500 hover:border-white/30 hover:text-gray-300'
+                                    }`}
+                            >
+                                ALL
+                            </button>
+                            {allCategories.map((cat) => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setSelectedCategory(cat)}
+                                    className={`px-4 py-2 rounded border font-mono text-xs transition-all duration-300 ${selectedCategory === cat
+                                        ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan shadow-[0_0_10px_rgba(0,243,255,0.3)]'
+                                        : 'border-white/10 text-gray-500 hover:border-white/30 hover:text-gray-300'
+                                        }`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Tag Filter */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-2 text-neon-purple font-mono text-xs opacity-70">
+                            <Tag className="w-3 h-3" />
+                            <span>TAG</span>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                            <button
+                                onClick={() => setSelectedTag(null)}
+                                className={`px-4 py-2 rounded border font-mono text-xs transition-all duration-300 ${selectedTag === null
                                     ? 'border-neon-purple bg-neon-purple/10 text-neon-purple shadow-[0_0_10px_rgba(188,19,254,0.3)]'
                                     : 'border-white/10 text-gray-500 hover:border-white/30 hover:text-gray-300'
                                     }`}
                             >
-                                {tag}
+                                ALL
                             </button>
-                        ))}
+                            {allTags.map((tag) => (
+                                <button
+                                    key={tag}
+                                    onClick={() => setSelectedTag(tag)}
+                                    className={`px-4 py-2 rounded border font-mono text-xs transition-all duration-300 ${selectedTag === tag
+                                        ? 'border-neon-purple bg-neon-purple/10 text-neon-purple shadow-[0_0_10px_rgba(188,19,254,0.3)]'
+                                        : 'border-white/10 text-gray-500 hover:border-white/30 hover:text-gray-300'
+                                        }`}
+                                >
+                                    {tag}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
