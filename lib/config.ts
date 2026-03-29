@@ -1,6 +1,7 @@
 import { Github, Twitter, Linkedin, Mail, Youtube, MessageCircle, MessageSquare } from 'lucide-react';
 
-const basePath = process.env.NODE_ENV === 'production' ? '/obsidian' : '';
+// 如果你以后换了网址有子路径再设置 basePath，现在在 Cloudflare 根目录不用设置：
+const basePath = '';
 
 export const siteConfig = {
     author: {
