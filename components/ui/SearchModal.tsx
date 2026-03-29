@@ -28,7 +28,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     useEffect(() => {
         if (isOpen && !hasFetched) {
             setIsLoading(true);
-            const basePath = process.env.NODE_ENV === 'production' ? '/obsidian' : '';
+            const basePath = '';
             fetch(`${basePath}/search.json`)
                 .then(res => res.json())
                 .then(data => {
