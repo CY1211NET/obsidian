@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Newsreader", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+}
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #111111;
+    --border: #eeeeee;
+    --muted: #737373;
+  }
+
+  .dark {
+    --background: #050505;
+    --foreground: #fafafa;
+    --border: #1a1a1a;
+    --muted: #a3a3a3;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* --- Markdown Optimization --- */
+
+.markdown-body {
+  @apply font-serif leading-[1.7] text-[1.125rem] md:text-[1.25rem] antialiased;
+}
+
+.markdown-body h1 {
+  @apply font-sans text-4xl md:text-5xl font-bold mb-10 mt-16 tracking-tight leading-tight;
+}
+
+.markdown-body h2 {
+  @apply font-sans text-2xl md:text-3xl font-semibold mb-6 mt-12 tracking-tight;
+}
+
+.markdown-body h3 {
+  @apply font-sans text-xl md:text-2xl font-semibold mb-4 mt-8 tracking-tight;
+}
+
+.markdown-body p {
+  @apply mb-8 text-neutral-800 dark:text-neutral-200;
+}
+
+.markdown-body blockquote {
+  @apply border-l-2 border-neutral-900 dark:border-neutral-100 pl-8 italic my-12 text-neutral-600 dark:text-neutral-400 font-serif text-xl;
+}
+
+.markdown-body ul, .markdown-body ol {
+  @apply mb-8 pl-6 space-y-3;
+}
+
+.markdown-body ul {
+  @apply list-disc;
+}
+
+.markdown-body ol {
+  @apply list-decimal;
+}
+
+.markdown-body li {
+  @apply pl-2;
+}
+
+.markdown-body code:not(pre code) {
+  @apply font-mono text-[0.9em] bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5 rounded border-2 border-neutral-200 dark:border-neutral-800;
+}
+
+.markdown-body pre {
+  @apply font-mono text-sm bg-neutral-50 dark:bg-neutral-900/50 p-6 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 overflow-x-auto my-10;
+}
+
+.markdown-body pre code {
+  @apply bg-transparent p-0 border-0;
+}
+
+.markdown-body a {
+  @apply underline underline-offset-4 decoration-neutral-300 dark:decoration-neutral-700 hover:decoration-neutral-900 dark:hover:decoration-neutral-100 transition-colors;
+}
+
+.markdown-body img {
+  @apply rounded-2xl my-12 w-full object-cover shadow-2xl shadow-black/5;
+}
+
+.markdown-body hr {
+  @apply my-16 border-neutral-100 dark:border-neutral-900;
+}
+
+/* --- Custom Utilities --- */
+
+.glass {
+  @apply bg-white/80 dark:bg-black/80 backdrop-blur-md;
+}
+
+.nav-link {
+  @apply text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors relative py-1;
+}
+
+.nav-link.active {
+  @apply text-neutral-900 dark:text-neutral-100;
+}
+
+.nav-link.active::after {
+  content: '';
+  @apply absolute bottom-0 left-0 w-full h-px bg-neutral-900 dark:bg-neutral-100;
+}
+
+/* --- Scrollbar Hide --- */
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
