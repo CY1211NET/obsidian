@@ -38,6 +38,7 @@ iface ens33 inet static
     netmask 255.255.255.0
     gateway 192.168.194.1
 ```
+![](https://i.cetsteam.com/imgs/2026/04/05/f4fff149af0f83fb.jpg)
 
 保存并执行：
 
