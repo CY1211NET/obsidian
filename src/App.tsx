@@ -466,6 +466,21 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <p className="text-sm font-medium tracking-tight">Minimalist Learning Blog</p>
             <p className="text-xs text-neutral-400">Crafted with intention and focus.</p>
           </div>
+          
+          {/* Blog Statistics */}
+          <div className="flex gap-12 text-center">
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-widest">Articles</p>
+              <p className="text-lg font-bold tabular-nums">{posts.length}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-widest">Total Words</p>
+              <p className="text-lg font-bold tabular-nums">
+                {posts.reduce((sum, p) => sum + (p.content || "").replace(/---[\s\S]*?---/, "").replace(/[#*`\n\r]/g, "").trim().length, 0).toLocaleString()}
+              </p>
+            </div>
+          </div>
+
           <div className="flex gap-6">
             {siteConfig.socials.map((social) => (
               <a 
