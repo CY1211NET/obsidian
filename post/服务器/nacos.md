@@ -1,7 +1,7 @@
 ---
 title: nacos
-date: '2025-11-16 00:00:00+08:00'
-updated: '2025-11-16 00:00:00+08:00'
+date: '2025-11-16 '
+updated: '2025-11-16 '
 category: Liunx
 tags:
 - nacos
