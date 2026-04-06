@@ -19,6 +19,7 @@ import { About } from './pages/About';
 import { Timeline } from './pages/Timeline';
 import { PostDetail } from './pages/PostDetail';
 import { NeteasePlayer } from './components/NeteasePlayer';
+import { SplashScreen } from './components/SplashScreen';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
 // --- Hooks ---
@@ -402,6 +403,8 @@ const Navigation = () => {
 };
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
+  const { language } = useLanguage();
+  const ui = siteConfig.ui[language as 'zh' | 'en'] || siteConfig.ui.zh;
   return (
     <div className="min-h-screen selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black">
       <ReadingProgressBar />
@@ -414,7 +417,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-neutral-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
             <span className="text-lg font-bold tracking-tighter hover:opacity-70 transition-opacity shrink-0">
-              Crain of world<span className="text-neutral-400">.</span>
+              Crain's world<span className="text-neutral-400">.</span>
             </span>
           </Link>
           <Navigation />
@@ -430,18 +433,18 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <footer className="max-w-6xl mx-auto px-6 py-12 border-t border-neutral-100 dark:border-neutral-900">
         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="space-y-2 text-center md:text-left">
-            <p className="text-sm font-medium tracking-tight">Minimalist Learning Blog</p>
-            <p className="text-xs text-neutral-400">Crafted with intention and focus.</p>
+            <p className="text-sm font-medium tracking-tight">{ui.footer?.tagline}</p>
+            <p className="text-xs text-neutral-400">{ui.footer?.desc}</p>
           </div>
           
           {/* Blog Statistics */}
           <div className="flex gap-12 text-center">
             <div className="space-y-1">
-              <p className="text-[10px] font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-widest">Articles</p>
+              <p className="text-[10px] font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-widest">{ui.footer?.articles}</p>
               <p className="text-lg font-bold tabular-nums">{posts.length}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-widest">Total Words</p>
+              <p className="text-[10px] font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-widest">{ui.footer?.totalWords}</p>
               <p className="text-lg font-bold tabular-nums">
                 {posts.reduce((sum, p) => sum + (p.content || "").replace(/---[\s\S]*?---/, "").replace(/[#*`\n\r]/g, "").trim().length, 0).toLocaleString()}
               </p>
@@ -837,9 +840,12 @@ export const TableOfContents = ({ content }: { content: string }) => {
 // --- Main App ---
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
   return (
     <LanguageProvider>
       <SearchProvider>
+        {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
         <Router>
           <Layout>
             <Routes>

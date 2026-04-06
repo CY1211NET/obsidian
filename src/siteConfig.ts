@@ -148,7 +148,13 @@ export const siteConfig = {
                     readTime: "分钟阅读"
                 }
             },
-            search: "搜索文章标题、标签或描述..."
+            search: "搜索文章标题、标签或描述...",
+            footer: {
+                tagline: "Crain's 学习记录空间",
+                desc: "用心记录，有迹可循",
+                articles: "文章",
+                totalWords: "总字数"
+            }
         },
         en: {
             nav: { home: "Home", timeline: "Timeline", about: "About" },
@@ -174,7 +180,13 @@ export const siteConfig = {
                     readTime: "min read"
                 }
             },
-            search: "Search by title, tags or description..."
+            search: "Search by title, tags or description...",
+            footer: {
+                tagline: "Crain's World",
+                desc: "Crafted with intention and focus",
+                articles: "Articles",
+                totalWords: "Total Words"
+            }
         }
     },
     music: {

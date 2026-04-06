@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 
 export const useDocumentTitle = (title: string) => {
   useEffect(() => {
-    const originalTitle = "Crain of World";
-    document.title = title ? `${title} | ${originalTitle}` : originalTitle;
-    return () => { document.title = originalTitle; };
+    const siteName = "Crain's World";
+    document.title = title ? `${title} | ${siteName}` : siteName;
+    return () => { document.title = siteName; };
   }, [title]);
 };
