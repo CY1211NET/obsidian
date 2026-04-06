@@ -1,6 +1,6 @@
 ---
 title: GIT取消暂存及保存单文件或者文件夹
-date: '2025-04-08'
+date: '2025-06-08'
 category: GIT
 tags:
 - GIT
@@ -177,4 +177,3 @@ git status
 | 暂存文件夹下某类文件 | `git add 文件夹/*.扩展名` |
 | 交互式暂存 | `git add -p 文件夹/` |
 | 暂存后检查 | `git status` |
-
