@@ -95,7 +95,7 @@
 }
 
 .markdown-body code:not(pre code) {
-  @apply font-mono text-[0.9em] bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5 rounded border-2 border-neutral-200 dark:border-neutral-800;
+  @apply font-mono text-[0.9em] bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-800;
 }
 
 .markdown-body pre {
@@ -180,5 +180,10 @@
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.mask-image-vertical {
+  mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
 }
 

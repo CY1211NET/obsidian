@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Calendar, BookOpen, User, Folder, Tag, Twitter, Github } from 'lucide-react';
+import { ArrowLeft, Calendar, BookOpen, User, Folder, Tag, Twitter, Github, X } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -11,6 +11,8 @@ import 'katex/dist/katex.min.css';
 import { posts } from '../data';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { parseMarkdown } from '../lib/markdown';
+import { useLanguage } from '../contexts/LanguageContext';
+import { siteConfig } from '../siteConfig';
 
 // We import these shared components from App.tsx since we are doing an iterative split
 import { CodeBlock, ImageLightbox, GiscusComments, TableOfContents, extractText } from '../App';
@@ -21,6 +23,24 @@ export const PostDetail = () => {
   const { pathname } = useLocation();
 
   useDocumentTitle(post?.title || "Article");
+  
+  const { language } = useLanguage();
+  const ui = siteConfig.ui[language as 'zh' | 'en'] || siteConfig.ui.zh;
+
+  const [drawerState, setDrawerState] = useState<{
+    isOpen: boolean;
+    type: 'category' | 'tag';
+    value: string;
+  }>({ isOpen: false, type: 'category', value: '' });
+
+  const relatedPosts = React.useMemo(() => {
+    if (!drawerState.isOpen || !drawerState.value) return [];
+    if (drawerState.type === 'category') {
+      return posts.filter(p => p.id !== post?.id && p.category === drawerState.value && !p.draft);
+    } else {
+      return posts.filter(p => p.id !== post?.id && p.tags.includes(drawerState.value) && !p.draft);
+    }
+  }, [drawerState, post?.id]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -93,7 +113,12 @@ export const PostDetail = () => {
               <span className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-widest">
                 <Folder size={10} /> Category
               </span>
-              <p className="text-sm font-medium">{displayCategory}</p>
+              <button 
+                onClick={() => setDrawerState({ isOpen: true, type: 'category', value: displayCategory })}
+                className="text-sm font-medium hover:underline text-left block"
+              >
+                {displayCategory}
+              </button>
             </div>
           </div>
 
@@ -103,9 +128,13 @@ export const PostDetail = () => {
             </h1>
             <div className="flex flex-wrap gap-2">
               {displayTags.map(tag => (
-                <span key={tag} className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white dark:bg-neutral-950 text-[10px] font-bold text-neutral-500 uppercase tracking-widest border-2 border-neutral-200 dark:border-neutral-800 shadow-sm">
-                  <Tag size={10} className="text-neutral-300 dark:text-neutral-700" /> {tag}
-                </span>
+                <button 
+                  key={tag} 
+                  onClick={() => setDrawerState({ isOpen: true, type: 'tag', value: tag })}
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white dark:bg-neutral-950 text-[10px] font-bold text-neutral-500 uppercase tracking-widest border-2 border-neutral-200 dark:border-neutral-800 shadow-sm hover:bg-neutral-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
+                >
+                  <Tag size={10} className="opacity-50" /> {tag}
+                </button>
               ))}
             </div>
           </div>
@@ -220,6 +249,72 @@ export const PostDetail = () => {
           alt={activeImage.alt} 
           onClose={() => setActiveImage(null)} 
         />
+      )}
+    </AnimatePresence>
+
+    <AnimatePresence>
+      {drawerState.isOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-end">
+           <motion.div 
+             initial={{ opacity: 0 }} 
+             animate={{ opacity: 1 }} 
+             exit={{ opacity: 0 }} 
+             className="absolute inset-0 bg-neutral-900/20 dark:bg-black/40 backdrop-blur-sm"
+             onClick={() => setDrawerState({ ...drawerState, isOpen: false })}
+           />
+           <motion.div
+             initial={{ x: '100%' }}
+             animate={{ x: 0 }}
+             exit={{ x: '100%' }}
+             transition={{ type: "spring", bounce: 0, duration: 0.5 }}
+             className="relative w-full max-w-md h-full bg-white dark:bg-neutral-950 shadow-2xl border-l-2 border-neutral-200 dark:border-neutral-800 flex flex-col z-10"
+           >
+              {/* Drawer Header */}
+              <div className="p-8 border-b-2 border-neutral-100 dark:border-neutral-900 flex justify-between items-center bg-white dark:bg-neutral-950">
+                 <div>
+                   <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.3em]">
+                     {drawerState.type === 'tag' ? ui.post?.drawer?.titleTag : ui.post?.drawer?.titleCat}
+                   </span>
+                   <h3 className="text-2xl font-bold mt-2 truncate w-64 text-neutral-900 dark:text-neutral-100">
+                     {drawerState.type === 'tag' ? `# ${drawerState.value}` : drawerState.value}
+                   </h3>
+                 </div>
+                 <button onClick={() => setDrawerState({ ...drawerState, isOpen: false })} className="p-3 bg-neutral-100 dark:bg-neutral-900 rounded-full hover:scale-105 transition-transform text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
+                    <X size={18} strokeWidth={3} />
+                 </button>
+              </div>
+              
+              {/* Post List */}
+              <div className="flex-1 overflow-y-auto p-8 space-y-4 pb-20">
+                 {relatedPosts.length > 0 ? (
+                    <div>
+                      <p className="text-[10px] font-bold text-neutral-400 mb-6 uppercase tracking-[0.2em]">{ui.post?.drawer?.related}</p>
+                      <div className="space-y-4">
+                        {relatedPosts.map(rp => (
+                           <Link key={rp.id} to={`/post/${rp.id}`} onClick={() => setDrawerState({ ...drawerState, isOpen: false })} className="block p-5 rounded-3xl border-2 border-neutral-100 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-neutral-100 transition-colors bg-neutral-50/50 dark:bg-neutral-900/30 group">
+                              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3 flex justify-between items-center">
+                                 <span>{rp.date}</span>
+                                 <span className="flex items-center gap-1.5"><BookOpen size={10} /> {rp.readingTime} {ui.post?.drawer?.readTime}</span>
+                              </p>
+                              <h4 className="text-base font-bold leading-snug group-hover:underline text-neutral-900 dark:text-neutral-100">{rp.title}</h4>
+                              <div className="mt-4 flex flex-wrap gap-2">
+                                {rp.tags.slice(0, 2).map((t: string) => (
+                                  <span key={t} className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 bg-neutral-100 dark:bg-neutral-900 px-2 py-1 rounded">#{t}</span>
+                                ))}
+                              </div>
+                           </Link>
+                        ))}
+                      </div>
+                    </div>
+                 ) : (
+                    <div className="text-center py-12 flex flex-col items-center justify-center">
+                       <Folder size={32} className="text-neutral-200 dark:text-neutral-800 mb-4" />
+                       <span className="text-neutral-500 font-bold">{ui.post?.drawer?.noPosts}</span>
+                    </div>
+                 )}
+              </div>
+           </motion.div>
+        </div>
       )}
     </AnimatePresence>
     </>

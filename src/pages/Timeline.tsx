@@ -4,6 +4,8 @@ import { ChevronDown, ChevronLeft, X, BookOpen, Code, Trophy, List } from 'lucid
 import { Link } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useSearch } from '../contexts/SearchContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { siteConfig } from '../siteConfig';
 import { posts, timeline } from '../data';
 import { cn } from '../lib/utils';
 
@@ -22,6 +24,9 @@ export const Timeline = () => {
   
   const [expandedYears, setExpandedYears] = useState<string[]>([]);
   const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
+  
+  const { language } = useLanguage();
+  const ui = siteConfig.ui[language as 'zh' | 'en'] || siteConfig.ui.zh;
 
   useDocumentTitle("Timeline");
 
@@ -46,6 +51,24 @@ export const Timeline = () => {
   const categories = Array.from(new Set(combinedItems.map(item => item.category)));
   const allTags = Array.from(new Set(combinedItems.flatMap(item => item.tags)));
   const years = Array.from(new Set(combinedItems.map(item => new Date(item.date).getFullYear().toString()))).sort((a, b) => b.localeCompare(a));
+  
+  const categoryCounts = combinedItems.reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const tagCounts = combinedItems.reduce((acc, item) => {
+    item.tags.forEach(tag => {
+      acc[tag] = (acc[tag] || 0) + 1;
+    });
+    return acc;
+  }, {} as Record<string, number>);
+
+  const yearCounts = combinedItems.reduce((acc, item) => {
+    const year = new Date(item.date).getFullYear().toString();
+    acc[year] = (acc[year] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   const availableMonths = selectedYear 
     ? Array.from(new Set(combinedItems
@@ -121,6 +144,38 @@ export const Timeline = () => {
 
   const toggleMonth = (yearMonth: string) => {
     setExpandedMonths(prev => prev.includes(yearMonth) ? prev.filter(ym => ym !== yearMonth) : [...prev, yearMonth]);
+  };
+
+  const getYearSummary = (year: string) => {
+    const items = filteredTimeline.filter(item => new Date(item.date).getFullYear().toString() === year);
+    if (items.length === 0) return null;
+    
+    // Sort just in case, newest first
+    const sortedItems = [...items].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const count = sortedItems.length;
+    const latest = sortedItems[0];
+    const earliest = sortedItems[sortedItems.length - 1];
+
+    const monthsCount = sortedItems.reduce((acc, item) => {
+      const month = (new Date(item.date).getMonth() + 1).toString().padStart(2, '0');
+      acc[month] = (acc[month] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const maxMonth = Object.keys(monthsCount).sort((a, b) => monthsCount[b] - monthsCount[a])[0];
+
+    const catsCount = sortedItems.reduce((acc, item) => {
+      acc[item.category] = (acc[item.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const maxCat = Object.keys(catsCount).sort((a, b) => catsCount[b] - catsCount[a])[0];
+
+    const tgsCount = sortedItems.reduce((acc, item) => {
+      item.tags.forEach(t => acc[t] = (acc[t] || 0) + 1);
+      return acc;
+    }, {} as Record<string, number>);
+    const maxTag = Object.keys(tgsCount).sort((a, b) => tgsCount[b] - tgsCount[a])[0];
+
+    return { count, maxMonth, maxCat, maxTag, latest, earliest };
   };
 
   return (
@@ -202,7 +257,7 @@ export const Timeline = () => {
                                   : "bg-transparent text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                               )}
                             >
-                              {cat}
+                              {cat} <span className="opacity-50">({categoryCounts[cat]})</span>
                             </button>
                           ))}
                         </motion.div>
@@ -250,7 +305,7 @@ export const Timeline = () => {
                                     : "bg-transparent text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                                 )}
                               >
-                                {year}
+                                {year} <span className="opacity-50 ml-1">({yearCounts[year]})</span>
                               </button>
                             ))}
                           </div>
@@ -283,7 +338,7 @@ export const Timeline = () => {
                                       : "bg-transparent text-neutral-500 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                                   )}
                                 >
-                                  {monthNames[month]}
+                                  {month} {monthNames[month]}
                                 </button>
                               ))}
                             </motion.div>
@@ -321,7 +376,7 @@ export const Timeline = () => {
                                   : "bg-white dark:bg-neutral-950 text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
                               )}
                             >
-                              {tag}
+                              {tag} <span className="opacity-50 ml-1">({tagCounts[tag]})</span>
                             </button>
                           ))}
                         </motion.div>
@@ -348,8 +403,8 @@ export const Timeline = () => {
         {/* Main Content Area */}
         <div className="flex-1 space-y-16">
           <header className="p-10 md:p-12 rounded-[3rem] border-2 border-neutral-200/60 dark:border-neutral-800/60 bg-neutral-50/30 dark:bg-neutral-900/10 transition-all duration-700 shadow-sm space-y-4">
-            <h1 className="text-5xl font-bold tracking-tighter">Learning Path</h1>
-            <p className="text-neutral-500 dark:text-neutral-400">A chronological log of my growth, milestones, and writings.</p>
+            <h1 className="text-5xl font-bold tracking-tighter">{ui.timeline.title}</h1>
+            <p className="text-neutral-500 dark:text-neutral-400">{ui.timeline.subtitle}</p>
           </header>
 
       {sortedYears.length > 0 ? (
@@ -357,16 +412,81 @@ export const Timeline = () => {
           {sortedYears.map((year) => (
             <div key={year} className="relative space-y-12">
               {/* Year Header */}
-              <div className="relative flex items-center justify-center z-10">
+              <div className="relative flex flex-col lg:flex-row items-center justify-center z-20">
                 <button
                   onClick={() => toggleYear(year)}
-                  className="px-8 py-2 rounded-full bg-white dark:bg-black border-2 border-neutral-900 dark:border-neutral-100 text-sm font-bold tracking-[0.3em] flex items-center gap-3 shadow-xl hover:scale-105 transition-all text-neutral-900 dark:text-neutral-100"
+                  className="px-8 py-2 rounded-full bg-white dark:bg-black border-2 border-neutral-900 dark:border-neutral-100 text-sm font-bold tracking-[0.3em] flex items-center gap-3 shadow-xl hover:scale-105 transition-all text-neutral-900 dark:text-neutral-100 z-20 relative"
                 >
                   {year}
                   <motion.div animate={{ rotate: expandedYears.includes(year) ? 0 : 180 }}>
                     <ChevronDown size={14} />
                   </motion.div>
                 </button>
+
+                <AnimatePresence>
+                  {expandedYears.includes(year) && (() => {
+                    const summary = getYearSummary(year);
+                    if (!summary) return null;
+                    return (
+                      <motion.div 
+                        initial={{ opacity: 0, x: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: -10, scale: 0.95 }}
+                        className="
+                          mt-8 lg:mt-0 w-[90%] lg:w-[350px] xl:w-[420px] 
+                          lg:absolute lg:left-[calc(50%+6rem)] xl:left-[calc(50%+8rem)] lg:top-1/2 lg:-translate-y-1/2 
+                          p-6 rounded-3xl shadow-2xl relative overflow-hidden z-10
+                          bg-white dark:bg-neutral-900 
+                          border-2 border-neutral-100 dark:border-neutral-800 
+                          text-neutral-900 dark:text-neutral-100
+                        "
+                      >
+                        {/* Top Metric Cards */}
+                        <div className="grid grid-cols-2 gap-4 mb-6 relative z-10">
+                          <div className="space-y-1">
+                            <p className="text-[10px] uppercase font-bold opacity-50 tracking-widest">{ui.timeline.summary?.total || "Total"}</p>
+                            <p className="text-3xl font-black">{summary.count}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] uppercase font-bold opacity-50 tracking-widest">{ui.timeline.summary?.maxMonth || "Top Month"}</p>
+                            <p className="text-xl font-bold pt-1">{summary.maxMonth} <span className="text-sm opacity-50">{monthNames[summary.maxMonth]}</span></p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] uppercase font-bold opacity-50 tracking-widest">{ui.timeline.summary?.topCat || "Top Cat"}</p>
+                            <p className="text-sm font-bold pt-1.5 truncate">{summary.maxCat}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] uppercase font-bold opacity-50 tracking-widest">{ui.timeline.summary?.topTag || "Top Tag"}</p>
+                            <p className="text-sm font-bold pt-1.5 truncate">{summary.maxTag}</p>
+                          </div>
+                        </div>
+                        
+                        {/* Earliest and Latest */}
+                        <div className="flex flex-col gap-3 py-4 border-t border-neutral-200 dark:border-neutral-800 text-sm relative z-10">
+                          <div className="flex items-start gap-4">
+                            <div className="font-bold opacity-50 w-16 shrink-0">{ui.timeline.summary?.first || "First"}</div>
+                            <div className="truncate">
+                              <span className="mr-2 opacity-50 text-xs">{summary.earliest.date}</span>
+                              {summary.earliest.isPost ? <Link to={`/post/${summary.earliest.id}`} className="hover:underline hover:text-black dark:hover:text-white transition-colors">{summary.earliest.title}</Link> : summary.earliest.title}
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-4">
+                            <div className="font-bold opacity-50 w-16 shrink-0">{ui.timeline.summary?.last || "Last"}</div>
+                            <div className="truncate">
+                              <span className="mr-2 opacity-50 text-xs">{summary.latest.date}</span>
+                              {summary.latest.isPost ? <Link to={`/post/${summary.latest.id}`} className="hover:underline hover:text-black dark:hover:text-white transition-colors">{summary.latest.title}</Link> : summary.latest.title}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Background Watermark */}
+                        <div className="absolute -bottom-4 -right-4 text-8xl font-black opacity-[0.03] dark:opacity-[0.02] pointer-events-none select-none tracking-tighter">
+                          {year}
+                        </div>
+                      </motion.div>
+                    );
+                  })()}
+                </AnimatePresence>
               </div>
 
               <AnimatePresence>
@@ -385,7 +505,7 @@ export const Timeline = () => {
                             onClick={() => toggleMonth(`${year}-${month}`)}
                             className="px-6 py-1.5 rounded-full bg-white dark:bg-neutral-900 border-2 border-neutral-300 dark:border-neutral-800 text-[10px] font-bold tracking-[0.2em] flex items-center gap-2 hover:border-neutral-900 dark:hover:border-neutral-100 transition-all text-neutral-600 dark:text-neutral-400 shadow-sm"
                           >
-                            {monthNames[month].toUpperCase()}
+                            {month} {monthNames[month].toUpperCase()}
                             <motion.div animate={{ rotate: expandedMonths.includes(`${year}-${month}`) ? 0 : 180 }}>
                               <ChevronDown size={12} />
                             </motion.div>
@@ -459,7 +579,7 @@ export const Timeline = () => {
         </div>
       ) : (
         <div className="py-20 text-center space-y-4">
-          <p className="text-neutral-400 italic">No entries match your selection.</p>
+          <p className="text-neutral-400 italic">{ui.home.noResults}</p>
           <button 
             onClick={() => { setSelectedCategory(null); setSelectedTags([]); setSelectedYear(null); setSelectedMonth(null); setSearchQuery(''); }}
             className="text-sm font-bold border-b border-neutral-900 dark:border-neutral-100"

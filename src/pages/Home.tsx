@@ -6,6 +6,7 @@ import { posts } from '../data';
 import { siteConfig } from '../siteConfig';
 import { useSearch } from '../contexts/SearchContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useLanguage } from '../contexts/LanguageContext';
 import { cn } from '../lib/utils';
 import { ImageLightbox } from '../App';
 
@@ -15,6 +16,9 @@ export const Home = () => {
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const { searchQuery, setSearchQuery } = useSearch();
+  const { language } = useLanguage();
+  const homeLang = siteConfig.home[language as 'zh' | 'en'] || siteConfig.home.zh;
+  const ui = siteConfig.ui[language as 'zh' | 'en'] || siteConfig.ui.zh;
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [sectionsCollapsed, setSectionsCollapsed] = useState({
     timeline: false,
@@ -29,6 +33,24 @@ export const Home = () => {
   const categories = Array.from(new Set(posts.map(p => p.category)));
   const allTags = Array.from(new Set(posts.flatMap(p => p.tags)));
   const years = Array.from(new Set(posts.map(p => new Date(p.date).getFullYear().toString()))).sort((a, b) => b.localeCompare(a));
+
+  const categoryCounts = posts.reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const tagCounts = posts.reduce((acc, item) => {
+    item.tags.forEach(tag => {
+      acc[tag] = (acc[tag] || 0) + 1;
+    });
+    return acc;
+  }, {} as Record<string, number>);
+
+  const yearCounts = posts.reduce((acc, item) => {
+    const year = new Date(item.date).getFullYear().toString();
+    acc[year] = (acc[year] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   const availableMonths = selectedYear 
     ? Array.from(new Set(posts
@@ -52,8 +74,8 @@ export const Home = () => {
     return categoryMatch && tagsMatch && yearMatch && monthMatch && !post.draft;
   });
 
-  const postsToShow = filteredPosts.slice(0, currentPage * postsPerPage);
-  const hasMore = filteredPosts.length > postsToShow.length;
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const postsToShow = filteredPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => 
@@ -98,10 +120,10 @@ export const Home = () => {
       <section className="p-10 md:p-16 rounded-[3rem] border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 transition-all duration-700 shadow-sm flex flex-col md:flex-row gap-12 items-center">
         <div className="flex-1 space-y-6">
           <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-[0.9]">
-            {siteConfig.home.title}
+            {homeLang.title}
           </h1>
           <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-600 uppercase tracking-[0.4em]">
-            {siteConfig.home.subtitle.toUpperCase()}
+            {homeLang.subtitle.toUpperCase()}
           </p>
         </div>
         <div className="w-48 h-48 rounded-[2rem] overflow-hidden border-2 border-neutral-100 dark:border-neutral-800 shrink-0 relative group cursor-zoom-in">
@@ -226,7 +248,7 @@ export const Home = () => {
                                   : "bg-transparent text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                                 )}
                               >
-                                {year}
+                                {year} <span className="opacity-50 ml-1">({yearCounts[year]})</span>
                               </button>
                             ))}
                           </div>
@@ -259,7 +281,7 @@ export const Home = () => {
                                       : "bg-transparent text-neutral-500 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                                   )}
                                 >
-                                  {monthNames[month]}
+                                  {month} {monthNames[month]}
                                 </button>
                               ))}
                             </motion.div>
@@ -308,7 +330,7 @@ export const Home = () => {
                                   : "bg-transparent text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                               )}
                             >
-                              {cat}
+                              {cat} <span className="opacity-50 ml-1">({categoryCounts[cat]})</span>
                             </button>
                           ))}
                         </motion.div>
@@ -344,7 +366,7 @@ export const Home = () => {
                                   : "bg-white dark:bg-neutral-950 text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
                               )}
                             >
-                              {tag}
+                              {tag} <span className="opacity-50 ml-1">({tagCounts[tag]})</span>
                             </button>
                           ))}
                         </motion.div>
@@ -432,13 +454,57 @@ export const Home = () => {
                 </article>
               ))}
               
-              {hasMore && (
-                <div className="pt-8 flex justify-center">
+              {totalPages > 1 && (
+                <div className="pt-8 flex justify-center items-center gap-2">
                   <button
-                    onClick={() => setCurrentPage(prev => prev + 1)}
-                    className="px-8 py-4 rounded-2xl bg-neutral-900 text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 md:p-3 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Load More Articles
+                    <ChevronLeft size={20} />
+                  </button>
+                  
+                  <div className="flex gap-1 items-center">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page, index, array) => {
+                      if (
+                        totalPages > 5 &&
+                        page !== 1 &&
+                        page !== totalPages &&
+                        Math.abs(page - currentPage) > 1
+                      ) {
+                        // Show ellipsis only if it's the first hidden page in a sequence
+                        if (
+                          (page === currentPage - 2 && page > 2) ||
+                          (page === currentPage + 2 && page < totalPages - 1)
+                        ) {
+                          return <span key={`ellipsis-${page}`} className="px-1 text-neutral-400">...</span>;
+                        }
+                        return null;
+                      }
+                      
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={cn(
+                            "w-8 h-8 md:w-10 md:h-10 rounded-full text-xs font-bold transition-all flex items-center justify-center",
+                            currentPage === page
+                              ? "bg-neutral-900 text-white dark:bg-white dark:text-black shadow-lg scale-110"
+                              : "bg-transparent text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                          )}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="p-2 md:p-3 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight size={20} />
                   </button>
                 </div>
               )}

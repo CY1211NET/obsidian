@@ -18,6 +18,8 @@ import { Home } from './pages/Home';
 import { About } from './pages/About';
 import { Timeline } from './pages/Timeline';
 import { PostDetail } from './pages/PostDetail';
+import { NeteasePlayer } from './components/NeteasePlayer';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
 // --- Hooks ---
 
@@ -78,57 +80,7 @@ const ReadingProgressBar = () => {
   );
 };
 
-const MusicPlayer = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    // A beautiful, chill lofi stream URL (or fallback)
-    audioRef.current = new Audio('https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3');
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.4;
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  const togglePlay = () => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  return (
-    <button
-      onClick={togglePlay}
-      className={cn(
-        "p-2 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center relative overflow-hidden group",
-        isPlaying ? "bg-neutral-100 dark:bg-neutral-800 shadow-inner" : "hover:bg-neutral-100 dark:hover:bg-neutral-900"
-      )}
-      aria-label="Toggle music"
-    >
-      <Music size={18} className={cn(
-        "transition-all duration-700",
-        isPlaying ? "text-neutral-900 dark:text-neutral-100 scale-90" : "text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-100"
-      )} />
-      {isPlaying && (
-         <div className="absolute inset-0 flex items-center justify-center gap-[2px] pointer-events-none opacity-50 dark:opacity-80 mix-blend-difference text-white">
-            <motion.div animate={{ height: ["4px", "14px", "4px"] }} transition={{ repeat: Infinity, duration: 1.0 }} className="w-0.5 bg-current rounded-full" />
-            <motion.div animate={{ height: ["4px", "18px", "4px"] }} transition={{ repeat: Infinity, duration: 1.0, delay: 0.2 }} className="w-0.5 bg-current rounded-full" />
-            <motion.div animate={{ height: ["4px", "10px", "4px"] }} transition={{ repeat: Infinity, duration: 1.0, delay: 0.4 }} className="w-0.5 bg-current rounded-full" />
-         </div>
-      )}
-    </button>
-  );
-};
+// Old MusicPlayer was removed to give way to NeteasePlayer
 
 const theme = {
   colors: {
@@ -194,8 +146,23 @@ const ThemeToggle = () => {
   );
 };
 
+const LangToggle = () => {
+  const { language, toggleLanguage } = useLanguage();
+  return (
+    <button
+      onClick={toggleLanguage}
+      className="px-2 py-1 mx-1 text-xs font-bold rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all duration-300 text-neutral-600 dark:text-neutral-400"
+      aria-label="Toggle language"
+    >
+      {language === 'zh' ? '中' : 'En'}
+    </button>
+  );
+};
+
 const Navigation = () => {
   const { searchQuery, setSearchQuery } = useSearch();
+  const { language } = useLanguage();
+  const ui = siteConfig.ui[language as 'zh' | 'en'] || siteConfig.ui.zh;
   const [showResults, setShowResults] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -253,9 +220,9 @@ const Navigation = () => {
   }, [searchQuery]);
 
   const navLinks = [
-    { path: '/', label: 'Home' },
-    { path: '/timeline', label: 'Timeline' },
-    { path: '/about', label: 'About' }
+    { path: '/', label: ui.nav.home },
+    { path: '/timeline', label: ui.nav.timeline },
+    { path: '/about', label: ui.nav.about }
   ];
 
   return (
@@ -265,7 +232,7 @@ const Navigation = () => {
         <Search className="absolute left-3 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-neutral-100 transition-colors pointer-events-none" size={14} />
         <input
           type="text"
-          placeholder="Search..."
+          placeholder={ui.search}
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);
@@ -368,7 +335,7 @@ const Navigation = () => {
       </div>
 
       <div className="flex items-center gap-1">
-        <MusicPlayer />
+        <LangToggle />
         <ThemeToggle />
         
         {/* Hamburger Menu - Mobile View */}
@@ -502,6 +469,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           </p>
         </div>
       </footer>
+
+      {siteConfig.music?.playlists && siteConfig.music.playlists.length > 0 && (
+        <NeteasePlayer 
+           playlists={siteConfig.music.playlists} 
+           defaultPlaylistId={siteConfig.music.defaultPlaylistId || siteConfig.music.playlists[0].id} 
+        />
+      )}
     </div>
   );
 };
@@ -864,17 +838,19 @@ export const TableOfContents = ({ content }: { content: string }) => {
 
 export default function App() {
   return (
-    <SearchProvider>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/timeline" element={<Timeline />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/post/:id" element={<PostDetail />} />
-          </Routes>
-        </Layout>
-      </Router>
-    </SearchProvider>
+    <LanguageProvider>
+      <SearchProvider>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/timeline" element={<Timeline />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/post/:id" element={<PostDetail />} />
+            </Routes>
+          </Layout>
+        </Router>
+      </SearchProvider>
+    </LanguageProvider>
   );
 }
