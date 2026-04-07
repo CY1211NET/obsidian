@@ -1,3 +1,13 @@
+---
+author: Crain
+date: 2023-05-14
+title: Java锁
+tags:
+  - Java
+emaili: y252840@163.com
+updated:
+category: 学习日记
+---
 
 
 ---

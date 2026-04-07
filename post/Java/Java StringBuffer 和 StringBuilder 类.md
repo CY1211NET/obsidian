@@ -6,6 +6,7 @@ tags:
 emaili: y252840@163.com
 date: 2025-06-30
 title: Java StringBuffer 和 StringBuilder 类
+category: 学习日记
 ---
 在 Java 中，`StringBuffer` 和 `StringBuilder` 是两个非常有用的类，它们都用于处理可变的字符串。它们的主要作用是解决 **字符串不可变** 带来的性能问题，尤其在频繁修改字符串的场景下。这两个类有很多相似之处，但它们也有一些重要的区别，特别是 **线程安全性**。
 

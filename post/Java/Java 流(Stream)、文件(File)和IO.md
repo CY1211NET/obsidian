@@ -3,9 +3,11 @@ Author:
   - Crain
 tags:
   - Java
-from: 2025-06-18
+date: 2025-06-18
 emaili: y252840@163.com
 title: Java 流(Stream)、文件(File)和IO
+updated:
+category: 学习日记
 ---
 # Java 流(Stream)、文件(File)和IO 总结
 
