@@ -21,6 +21,7 @@ import { PostDetail } from './pages/PostDetail';
 import { NeteasePlayer } from './components/NeteasePlayer';
 import { SplashScreen } from './components/SplashScreen';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import Giscus from '@giscus/react';
 
 // --- Hooks ---
 
@@ -758,24 +759,72 @@ export const ImageLightbox = ({ src, alt, onClose, onPrev, onNext }: { src: stri
 };
 
 export const GiscusComments = () => {
-  const [isMounted, setIsMounted] = useState(false);
+  const { language } = useLanguage();
+  const [theme, setTheme] = useState('light');
+  
   useEffect(() => {
-    setIsMounted(true);
+    // Sync giscus theme with the site theme
+    const isDark = document.documentElement.classList.contains('dark');
+    setTheme(isDark ? 'dark' : 'light');
+    
+    // Listen for theme changes (ThemeToggle)
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          const dark = document.documentElement.classList.contains('dark');
+          setTheme(dark ? 'dark' : 'light');
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
   }, []);
 
-  if (!isMounted) return null;
+  const config = (siteConfig as any).giscus;
+  
+  // Only render if we have the configuration
+  if (!config || !config.repo || !config.repoId || !config.categoryId) {
+    return (
+      <section className="mt-24 pt-12 border-t-2 border-neutral-100 dark:border-neutral-900">
+        <div className="mb-12 space-y-2 text-center md:text-left">
+          <h3 className="text-2xl font-bold tracking-tight">Conversations</h3>
+          <p className="text-sm text-neutral-400">Join the discussion below.</p>
+        </div>
+        <div className="p-12 rounded-3xl bg-neutral-50 dark:bg-neutral-900/50 border-2 border-dashed border-neutral-200 dark:border-neutral-800 text-center">
+          <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Giscus Configuration Required</p>
+          <p className="mt-2 text-[10px] text-neutral-500 italic">Please provide repoId and categoryId in siteConfig.ts to enable comments.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mt-24 pt-12 border-t-2 border-neutral-100 dark:border-neutral-900">
       <div className="mb-12 space-y-2 text-center md:text-left">
-        <h3 className="text-2xl font-bold tracking-tight">Conversations</h3>
-        <p className="text-sm text-neutral-400">Join the discussion below.</p>
+        <h3 className="text-2xl font-bold tracking-tight">
+          {language === 'zh' ? '评论' : 'Conversations'}
+        </h3>
+        <p className="text-sm text-neutral-400">
+          {language === 'zh' ? '在下方加入我们的讨论' : 'Join the discussion below.'}
+        </p>
       </div>
       <div id="giscus-container">
-        {/* Placeholder for Giscus in a real environment. Since we can't easily run side-effect scripts here, we represent it. */}
-        <div className="p-12 rounded-3xl bg-neutral-50 dark:bg-neutral-900/50 border-2 border-dashed border-neutral-200 dark:border-neutral-800 text-center">
-          <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Giscus Comments Section</p>
-        </div>
+        <Giscus
+          id="giscus-comments"
+          repo={config.repo}
+          repoId={config.repoId}
+          category={config.category}
+          categoryId={config.categoryId}
+          mapping={config.mapping}
+          strict={config.strict}
+          reactionsEnabled={config.reactionsEnabled}
+          emitMetadata={config.emitMetadata}
+          inputPosition={config.inputPosition}
+          theme={theme === 'dark' ? 'transparent_dark' : 'light'}
+          lang={language === 'zh' ? 'zh-CN' : 'en'}
+          loading={config.loading}
+        />
       </div>
     </section>
   );

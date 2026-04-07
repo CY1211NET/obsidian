@@ -198,5 +198,18 @@ export const siteConfig = {
             { id: "7930689090", name: "很喜欢的几首歌" }
 
         ]
+    },
+    giscus: {
+        repo: "CY1211NET/crainofblog", // 你的 GitHub 仓库名称
+        repoId: "",                     // 填入 data-repo-id
+        category: "Announcements",       // 建议选择 Announcements
+        categoryId: "",                 // 填入 data-category-id
+        mapping: "pathname",            // 映射方式
+        strict: "0",
+        reactionsEnabled: "1",
+        emitMetadata: "0",
+        inputPosition: "top",
+        lang: "zh-CN",                  // 中文
+        loading: "lazy"
     }
 };

@@ -1,10 +1,11 @@
 ---
 title: Ubuntu-Mysql安装
-date: '2024-9-1 00:00:00+08:00'
+date: 2024-9-1 00:00:00+08:00
 category: Linux
 tags:
-- sql
-- ubuntu
+  - sql
+  - ubuntu
+  - Linux
 draft: false
 author: Crain
 ---
