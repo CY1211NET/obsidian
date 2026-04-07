@@ -8,3 +8,6 @@ coverage/
 !.env.example
 .obsidian/
 template/
+Tags/
+.space/
+.makemd/
