@@ -1,13 +1,14 @@
 ---
 title: FTP,NFS,Samba,Dns服务部署
-date: '2025-06-19'
+date: 2025-06-19
 category: Linux
 tags:
-- Linux
+  - Linux
 draft: false
 author: Crain
+updated: 2026-02-04
 ---
-以下是根据你提供的实验内容，整理出的 **Ubuntu系统下的对应实验步骤汇总**，涵盖了 Samba、NFS、FTP、DNS、Web 服务的安装与配置过程，适用于教学实验环境。
+
 
 ---
 

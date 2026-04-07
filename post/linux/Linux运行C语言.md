@@ -1,12 +1,13 @@
 ---
 title: Linux运行C语言
-date: '2025-06-17'
-category: Linux
+date: 2025-06-17
 tags:
-- Linux
-- C语言
+  - Linux
+  - C语言
 draft: false
 author: Crain
+category: Linux
+updated:
 ---
 在 Linux 系统中运行 C 语言程序，一般分为以下几个步骤，从编写、编译到运行都非常高效直观：
 

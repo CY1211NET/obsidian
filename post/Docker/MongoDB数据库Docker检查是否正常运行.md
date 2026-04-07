@@ -3,10 +3,12 @@ Author:
   - Crain
 tags:
   - "#Docker"
+  - 运维
 author: Crain
 date: 2025-05-14
 emaili: y252840@163.com
 title: MongoDB数据库Docker检查是否正常运行
+category: Linux
 ---
 
 

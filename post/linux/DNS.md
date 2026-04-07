@@ -1,11 +1,13 @@
 ---
 title: DNS
-date: '2025-06-20'
+date: 2025-06-20
 category: Linux
 tags:
-- Linux
+  - Linux
+  - "#DNS"
 draft: false
 author: Crain
+updated: 2026-04-07
 ---
 下面为你详细整理 **三台 Ubuntu 主机（或虚拟机）** 在本地 DNS 服务器配置实验中的完整配置与操作步骤，IP 地址使用你提供的：
 
@@ -38,7 +40,6 @@ iface ens33 inet static
     netmask 255.255.255.0
     gateway 192.168.194.1
 ```
-![](https://i.cetsteam.com/imgs/2026/04/05/f4fff149af0f83fb.jpg)
 
 保存并执行：
 
