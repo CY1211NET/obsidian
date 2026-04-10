@@ -14,8 +14,8 @@ import { parseMarkdown } from '../lib/markdown';
 import { useLanguage } from '../contexts/LanguageContext';
 import { siteConfig } from '../siteConfig';
 
-// We import these shared components from App.tsx since we are doing an iterative split
 import { CodeBlock, ImageLightbox, GiscusComments, TableOfContents, extractText } from '../App';
+import { Mermaid } from '../components/Mermaid';
 
 export const PostDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -182,6 +182,13 @@ export const PostDetail = () => {
             code({node, inline, className, children, ...props}: any) {
               const match = /language-(\w+)/.exec(className || '');
               const codeString = String(children).replace(/\n$/, '');
+              
+              const isMermaid = match && (match[1] === 'mermaid' || match[1] === 'graph');
+              
+              if (!inline && isMermaid) {
+                return <Mermaid chart={codeString} />;
+              }
+
               return !inline && match ? (
                 <CodeBlock code={codeString} language={match[1]} props={props} />
               ) : (

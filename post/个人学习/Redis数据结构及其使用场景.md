@@ -124,6 +124,8 @@ Redis 是一个高性能的内存数据库，它不仅仅是一个简单的键�
     
     - 每个元素都有一个分数（score）。
         
+    - 每个元素都有一个分数（score）。
+        
     - 支持按分数或字典序排序。
         
     - 支持范围查询。
@@ -212,127 +214,110 @@ Redis 是一个高性能的内存数据库，它不仅仅是一个简单的键�
 
 Redis 的数据结构可以用 **关系图（graph）** 的方式理解，这样更容易看清每种结构的特点和应用场景。
 
-``` graph TD
-                         Redis
-                           │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-      String              Hash               List
-        │                  │                  │
-   key → value       key → {field:value}   key → [v1,v2,v3]
-        │                  │                  │
-   计数器/缓存        对象存储(用户)        队列/消息
-                                            
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-       Set            Sorted Set            Bitmap
-        │                  │                  │
- key → {v1,v2,v3}    key → {score:value}   key → bit array
-   无序不重复            按score排序          位操作
-        │                  │                  │
-   标签系统           排行榜系统           签到统计
+```mermaid
+graph TD
+    Redis --> String
+    Redis --> Hash
+    Redis --> List
+    Redis --> Set
+    Redis --> SortedSet[Sorted Set]
+    Redis --> Bitmap
+    Redis --> HyperLogLog
+    Redis --> Stream
 
-                    │
-                HyperLogLog
-                    │
-            基数统计（UV访问量）
-
-                    │
-                  Stream
-                    │
-              消息流 / MQ
+    String --> S1[计数器/缓存]
+    Hash --> H1[对象存储/用户]
+    List --> L1[队列/消息]
+    Set --> Se1[标签系统]
+    SortedSet --> SS1[排行榜系统]
+    Bitmap --> B1[签到统计]
+    HyperLogLog --> HL1[基数统计/UV访问量]
+    Stream --> St1[消息流 / MQ]
 ```
 
 ---
 
-# 从底层结构角度理解 Redis
+# 9.从底层结构角度理解 Redis
 
 Redis 的 **逻辑数据结构** 底层其实是由一些 **基础结构**实现的：
 
-``` graph TD
-Redis底层结构
-│
-├── SDS (简单动态字符串)
-│
-├── Dict (哈希表)
-│
-├── LinkedList (双向链表)
-│
-├── ZipList / ListPack (压缩列表)
-│
-├── SkipList (跳表)
-│
-└── IntSet (整数集合)
+```mermaid
+graph TD
+    Root[Redis底层结构] --> SDS[SDS 简单动态字符串]
+    Root --> Dict[Dict 哈希表]
+    Root --> LinkedList[LinkedList 双向链表]
+    Root --> ZipList[ZipList / ListPack 压缩列表]
+    Root --> SkipList[SkipList 跳表]
+    Root --> IntSet[IntSet 整数集合]
 ```
 
 对应关系：
 
-``` graph TD
-String       → SDS
-Hash         → Dict / ZipList
-List         → LinkedList / ZipList
-Set          → Dict / IntSet
-Sorted Set   → SkipList + Dict
+```mermaid
+graph LR
+    String --> SDS
+    Hash --> Dict
+    Hash --> ZipList
+    List --> LinkedList
+    List --> ZipList
+    Set --> Dict
+    Set --> IntSet
+    SortedSet[Sorted Set] --> SkipList
+    SortedSet --> Dict
 ```
 
 ---
 
-# 一个完整结构关系图
+# 10.一个完整结构关系图
 
-``` graph TD
-                Redis 数据结构
-                        │
- ┌───────────────┬───────────────┬───────────────┐
- │               │               │               │
-String          Hash            List            Set
- │               │               │               │
-SDS        Dict / ZipList   LinkedList     Dict / IntSet
-                                │
-                           消息队列
-                                
-                 │
-             Sorted Set
-                 │
-           SkipList + Dict
-                 │
-              排行榜
+```mermaid
+graph TD
+    Redis_DS[Redis 数据结构] --> String
+    Redis_DS --> Hash
+    Redis_DS --> List
+    Redis_DS --> Set
+    Redis_DS --> SortedSet[Sorted Set]
+
+    String --> SDS
+    Hash --> Dict
+    Hash --> ZipList
+    List --> LinkedList
+    List --> MQ[消息队列]
+    Set --> Dict
+    Set --> IntSet
+    SortedSet --> SkipList
+    SortedSet --> SD[Dict]
+    SortedSet --> Leaderboard[排行榜]
 ```
 
 ---
 
-# 典型应用结构图
+# 11.典型应用结构图
 
-``` graph TD
-用户系统
-user:1001
-   │
-   └── Hash
-        ├── name
-        ├── age
-        └── email
+```mermaid
+graph TD
+    subgraph UserSystem[用户系统 user:1001]
+    Hash --> Name[name]
+    Hash --> Age[age]
+    Hash --> Email[email]
+    end
 
+    subgraph Rank[排行榜 rank]
+    SortedSet --> U1[1000 userA]
+    SortedSet --> U2[900 userB]
+    SortedSet --> U3[800 userC]
+    end
 
-排行榜
-rank
-   │
-   └── SortedSet
-        ├── 1000  userA
-        ├── 900   userB
-        └── 800   userC
-
-
-消息队列
-queue
-   │
-   └── List
-        ├── msg1
-        ├── msg2
-        └── msg3
+    subgraph Queue[消息队列 queue]
+    List --> M1[msg1]
+    List --> M2[msg2]
+    List --> M3[msg3]
+    end
 ```
 
 ---
 
-# 面试级总结（非常重要）
+# 12.总结
 
 Redis 五大核心数据结构：
 
@@ -356,145 +341,25 @@ Redis 五大核心数据结构：
 
 Redis 的数据结构可以用 **关系图（graph）** 的方式理解，这样更容易看清每种结构的特点和应用场景。
 
-``` graph TD
-                         Redis
-                           │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-      String              Hash               List
-        │                  │                  │
-   key → value       key → {field:value}   key → [v1,v2,v3]
-        │                  │                  │
-   计数器/缓存        对象存储(用户)        队列/消息
-                                            
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-       Set            Sorted Set            Bitmap
-        │                  │                  │
- key → {v1,v2,v3}    key → {score:value}   key → bit array
-   无序不重复            按score排序          位操作
-        │                  │                  │
-   标签系统           排行榜系统           签到统计
+```mermaid
+graph TD
+    Redis --> String
+    Redis --> Hash
+    Redis --> List
+    Redis --> Set
+    Redis --> SortedSet[Sorted Set]
+    Redis --> Bitmap
+    Redis --> HyperLogLog
+    Redis --> Stream
 
-                    │
-                HyperLogLog
-                    │
-            基数统计（UV访问量）
-
-                    │
-                  Stream
-                    │
-              消息流 / MQ
+    String --> S1[计数器/缓存]
+    Hash --> H1[对象存储/用户]
+    List --> L1[队列/消息]
+    Set --> Se1[标签系统]
+    SortedSet --> SS1[排行榜系统]
+    Bitmap --> B1[签到统计]
+    HyperLogLog --> HL1[基数统计/UV访问量]
+    Stream --> St1[消息流 / MQ]
 ```
 
 ---
-
-# 从底层结构角度理解 Redis
-
-Redis 的 **逻辑数据结构** 底层其实是由一些 **基础结构**实现的：
-
-``` graph TD
-Redis底层结构
-│
-├── SDS (简单动态字符串)
-│
-├── Dict (哈希表)
-│
-├── LinkedList (双向链表)
-│
-├── ZipList / ListPack (压缩列表)
-│
-├── SkipList (跳表)
-│
-└── IntSet (整数集合)
-```
-
-对应关系：
-
-``` graph TD
-String       → SDS
-Hash         → Dict / ZipList
-List         → LinkedList / ZipList
-Set          → Dict / IntSet
-Sorted Set   → SkipList + Dict
-```
-
----
-
-# 一个完整结构关系图
-
-``` graph TD
-                Redis 数据结构
-                        │
- ┌───────────────┬───────────────┬───────────────┐
- │               │               │               │
-String          Hash            List            Set
- │               │               │               │
-SDS        Dict / ZipList   LinkedList     Dict / IntSet
-                                │
-                           消息队列
-                                
-                 │
-             Sorted Set
-                 │
-           SkipList + Dict
-                 │
-              排行榜
-```
-
----
-
-# 典型应用结构图
-
-``` graph TD
-用户系统
-user:1001
-   │
-   └── Hash
-        ├── name
-        ├── age
-        └── email
-
-
-排行榜
-rank
-   │
-   └── SortedSet
-        ├── 1000  userA
-        ├── 900   userB
-        └── 800   userC
-
-
-消息队列
-queue
-   │
-   └── List
-        ├── msg1
-        ├── msg2
-        └── msg3
-```
-
----
-
-# 面试级总结（非常重要）
-
-Redis 五大核心数据结构：
-
-|数据结构|特点|常见场景|
-|---|---|---|
-|String|最基础类型|缓存、计数器|
-|Hash|key-field-value|对象存储|
-|List|有序可重复|消息队列|
-|Set|无序不重复|标签系统|
-|SortedSet|按 score 排序|排行榜|
-
-高级结构：
-
-|结构|用途|
-|---|---|
-|Bitmap|签到统计|
-|HyperLogLog|UV统计|
-|Stream|消息流|
-
----
-
