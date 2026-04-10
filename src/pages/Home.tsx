@@ -27,6 +27,20 @@ export const Home = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6;
+  const listTopRef = React.useRef<HTMLDivElement>(null);
+  const [tagSearch, setTagSearch] = useState('');
+  const [isCatExpanded, setIsCatExpanded] = useState(false);
+  const [isTagExpanded, setIsTagExpanded] = useState(false);
+
+  const scrollToTop = () => {
+    // Scroll to the start of the article list with a slight offset for better framing
+    const offset = 100;
+    const element = listTopRef.current;
+    if (element) {
+      const top = element.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
 
   useDocumentTitle("");
 
@@ -52,12 +66,43 @@ export const Home = () => {
     return acc;
   }, {} as Record<string, number>);
 
-  const availableMonths = selectedYear 
-    ? Array.from(new Set(posts
-        .filter(p => new Date(p.date).getFullYear().toString() === selectedYear)
-        .map(p => (new Date(p.date).getMonth() + 1).toString().padStart(2, '0'))
-      )).sort((a, b) => a.localeCompare(b))
-    : [];
+  const availableMonths = React.useMemo(() => {
+    if (!selectedYear) return [];
+    return Array.from(new Set(posts
+      .filter(p => new Date(p.date).getFullYear().toString() === selectedYear)
+      .map(p => (new Date(p.date).getMonth() + 1).toString().padStart(2, '0'))
+    )).sort((a, b) => a.localeCompare(b));
+  }, [selectedYear]);
+
+  const sortedCategories = React.useMemo(() => {
+    // Sort primarily by frequency (count), then by name
+    const sortedByFreq = [...categories].sort((a, b) => {
+      const countDiff = categoryCounts[b] - categoryCounts[a];
+      return countDiff !== 0 ? countDiff : a.localeCompare(b);
+    });
+    
+    // If a category is selected, keep it at the top
+    if (!selectedCategory) return sortedByFreq;
+    return [selectedCategory, ...sortedByFreq.filter(c => c !== selectedCategory)];
+  }, [categories, selectedCategory, categoryCounts]);
+
+  const sortedTags = React.useMemo(() => {
+    // Sort primarily by frequency (count), then by name
+    const sortedByFreq = [...allTags].sort((a, b) => {
+      const countDiff = tagCounts[b] - tagCounts[a];
+      return countDiff !== 0 ? countDiff : a.localeCompare(b);
+    });
+
+    // Apply local tag search
+    const filteredBySearch = tagSearch 
+      ? sortedByFreq.filter(tag => tag.toLowerCase().includes(tagSearch.toLowerCase()))
+      : sortedByFreq;
+
+    // Keep selected tags at the absolute top
+    const selected = filteredBySearch.filter(tag => selectedTags.includes(tag));
+    const unselected = filteredBySearch.filter(tag => !selectedTags.includes(tag));
+    return [...selected, ...unselected];
+  }, [allTags, selectedTags, tagCounts, tagSearch]);
 
   const monthNames: { [key: string]: string } = {
     '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr', '05': 'May', '06': 'Jun',
@@ -70,7 +115,7 @@ export const Home = () => {
     const tagsMatch = selectedTags.length === 0 || selectedTags.every(tag => post.tags.includes(tag));
     const yearMatch = !selectedYear || postDate.getFullYear().toString() === selectedYear;
     const monthMatch = !selectedMonth || (postDate.getMonth() + 1).toString().padStart(2, '0') === selectedMonth;
-    
+
     return categoryMatch && tagsMatch && yearMatch && monthMatch && !post.draft;
   });
 
@@ -78,21 +123,24 @@ export const Home = () => {
   const postsToShow = filteredPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
 
   const toggleTag = (tag: string) => {
-    setSelectedTags(prev => 
+    setSelectedTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
     setCurrentPage(1);
+    scrollToTop();
   };
 
   const handleYearSelect = (year: string | null) => {
     setSelectedYear(year);
     setSelectedMonth(null);
     setCurrentPage(1);
+    scrollToTop();
   };
 
   const handleCategorySelect = (cat: string | null) => {
     setSelectedCategory(cat);
     setCurrentPage(1);
+    scrollToTop();
   };
 
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
@@ -103,7 +151,7 @@ export const Home = () => {
     if (images.length <= 1 || lightboxSrc) return; // Pause auto-play when lightbox is open
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }, 5000); 
+    }, 5000);
     return () => clearInterval(interval);
   }, [images.length, lightboxSrc]);
 
@@ -143,7 +191,7 @@ export const Home = () => {
               }}
             />
           </AnimatePresence>
-          
+
           {/* Carousel Indicators */}
           {images.length > 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
@@ -153,8 +201,8 @@ export const Home = () => {
                   onClick={() => setCurrentImageIndex(idx)}
                   className={cn(
                     "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                    idx === currentImageIndex 
-                      ? "bg-white w-4" 
+                    idx === currentImageIndex
+                      ? "bg-white w-4"
                       : "bg-white/40 hover:bg-white/60"
                   )}
                   aria-label={`Go to image ${idx + 1}`}
@@ -167,10 +215,10 @@ export const Home = () => {
 
       <AnimatePresence>
         {lightboxSrc && (
-          <ImageLightbox 
-            src={images[currentImageIndex]} 
-            alt={`Profile ${currentImageIndex + 1}`} 
-            onClose={() => setLightboxSrc(null)} 
+          <ImageLightbox
+            src={images[currentImageIndex]}
+            alt={`Profile ${currentImageIndex + 1}`}
+            onClose={() => setLightboxSrc(null)}
             onPrev={() => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)}
             onNext={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
           />
@@ -189,7 +237,7 @@ export const Home = () => {
                 <h2 className="text-xl font-bold tracking-tight">Explore</h2>
                 <p className="text-[10px] text-neutral-500 dark:text-neutral-400">Discover thoughts</p>
               </div>
-              <button 
+              <button
                 onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
                 className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
               >
@@ -210,7 +258,7 @@ export const Home = () => {
                 >
                   {/* Year & Month */}
                   <div className="space-y-4">
-                    <button 
+                    <button
                       onClick={() => setSectionsCollapsed(prev => ({ ...prev, timeline: !prev.timeline }))}
                       className="w-full flex items-center justify-between group/label"
                     >
@@ -226,35 +274,37 @@ export const Home = () => {
                           className="space-y-4 overflow-hidden"
                         >
                           <div className="flex flex-wrap gap-2">
-                            <button
+                            <motion.button
+                              layout
                               onClick={() => handleYearSelect(null)}
                               className={cn(
                                 "px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border-2",
-                                !selectedYear 
-                                  ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white" 
+                                !selectedYear
+                                  ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white shadow-md shadow-black/10 dark:shadow-white/5"
                                   : "bg-transparent text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                               )}
                             >
                               Any
-                            </button>
+                            </motion.button>
                             {years.map(year => (
-                              <button
+                              <motion.button
+                                layout
                                 key={year}
                                 onClick={() => handleYearSelect(year)}
                                 className={cn(
                                   "px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border-2",
                                   selectedYear === year
-                                    ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white" 
-                                  : "bg-transparent text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
+                                    ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white shadow-md shadow-black/10 dark:shadow-white/5"
+                                    : "bg-transparent text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                                 )}
                               >
                                 {year} <span className="opacity-50 ml-1">({yearCounts[year]})</span>
-                              </button>
+                              </motion.button>
                             ))}
                           </div>
 
                           {selectedYear && (
-                            <motion.div 
+                            <motion.div
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               className="flex flex-wrap gap-2 pt-4 border-t border-neutral-200/50 dark:border-neutral-800/50"
@@ -263,8 +313,8 @@ export const Home = () => {
                                 onClick={() => setSelectedMonth(null)}
                                 className={cn(
                                   "px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all border-2",
-                                  !selectedMonth 
-                                    ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white" 
+                                  !selectedMonth
+                                    ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white"
                                     : "bg-transparent text-neutral-500 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                                 )}
                               >
@@ -277,7 +327,7 @@ export const Home = () => {
                                   className={cn(
                                     "px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all border-2",
                                     selectedMonth === month
-                                      ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white" 
+                                      ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white"
                                       : "bg-transparent text-neutral-500 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                                   )}
                                 >
@@ -293,7 +343,7 @@ export const Home = () => {
 
                   {/* Categories */}
                   <div className="space-y-4">
-                    <button 
+                    <button
                       onClick={() => setSectionsCollapsed(prev => ({ ...prev, categories: !prev.categories }))}
                       className="w-full flex items-center justify-between group/label"
                     >
@@ -306,33 +356,46 @@ export const Home = () => {
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
-                          className="flex flex-wrap gap-2 overflow-hidden"
+                          className="space-y-4 overflow-hidden"
                         >
-                          <button
-                            onClick={() => handleCategorySelect(null)}
-                            className={cn(
-                              "px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border-2",
-                              !selectedCategory 
-                                ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white" 
-                                : "bg-transparent text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
-                            )}
-                          >
-                            All
-                          </button>
-                          {categories.map(cat => (
+                          <div className={cn(
+                            "flex flex-wrap gap-2 overflow-hidden custom-scrollbar transition-all duration-300",
+                            isCatExpanded ? "max-h-[300px] pr-2" : "max-h-[120px] overflow-hidden mask-image-vertical"
+                          )}>
                             <button
-                              key={cat}
-                              onClick={() => handleCategorySelect(cat)}
+                              onClick={() => handleCategorySelect(null)}
                               className={cn(
                                 "px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border-2",
-                                selectedCategory === cat
-                                  ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white" 
+                                !selectedCategory 
+                                  ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white shadow-md shadow-black/10 dark:shadow-white/5" 
                                   : "bg-transparent text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                               )}
                             >
-                              {cat} <span className="opacity-50 ml-1">({categoryCounts[cat]})</span>
+                              All
                             </button>
-                          ))}
+                            {(isCatExpanded ? sortedCategories : sortedCategories.slice(0, 10)).map(cat => (
+                              <button
+                                key={cat}
+                                onClick={() => handleCategorySelect(cat)}
+                                className={cn(
+                                  "px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border-2",
+                                  selectedCategory === cat
+                                    ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white shadow-md shadow-black/10 dark:shadow-white/5" 
+                                    : "bg-transparent text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
+                                )}
+                              >
+                                {cat} <span className="opacity-50 ml-1">({categoryCounts[cat]})</span>
+                              </button>
+                            ))}
+                          </div>
+                          {sortedCategories.length > 10 && (
+                            <button 
+                              onClick={() => setIsCatExpanded(!isCatExpanded)}
+                              className="text-[10px] font-bold text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors uppercase tracking-[0.2em] pt-2"
+                            >
+                              {isCatExpanded ? 'Show Less' : `Show All (${sortedCategories.length})`}
+                            </button>
+                          )}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -340,7 +403,7 @@ export const Home = () => {
 
                   {/* Tags */}
                   <div className="space-y-4">
-                    <button 
+                    <button
                       onClick={() => setSectionsCollapsed(prev => ({ ...prev, tags: !prev.tags }))}
                       className="w-full flex items-center justify-between group/label"
                     >
@@ -353,22 +416,62 @@ export const Home = () => {
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
-                          className="flex flex-wrap gap-2 overflow-hidden"
+                          className="space-y-4"
                         >
-                          {allTags.map(tag => (
-                            <button
-                              key={tag}
-                              onClick={() => toggleTag(tag)}
-                              className={cn(
-                                "px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border-2",
-                                selectedTags.includes(tag)
-                                  ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white" 
-                                  : "bg-white dark:bg-neutral-950 text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
-                              )}
+                          <div className="relative group/search">
+                            <input 
+                              type="text" 
+                              placeholder="Filter tags..."
+                              value={tagSearch}
+                              onChange={(e) => {
+                                setTagSearch(e.target.value);
+                                if (e.target.value) setIsTagExpanded(true);
+                              }}
+                              className="w-full pl-9 pr-4 py-2 text-xs bg-neutral-100/50 dark:bg-neutral-800/50 rounded-xl border border-transparent focus:border-neutral-200 dark:focus:border-neutral-700 focus:bg-white dark:focus:bg-neutral-900 transition-all outline-none"
+                            />
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 group-focus-within/search:text-neutral-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            {tagSearch && (
+                              <button 
+                                onClick={() => setTagSearch('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-900"
+                              >
+                                <X size={12} />
+                              </button>
+                            )}
+                          </div>
+                          <div className={cn(
+                            "flex flex-wrap gap-2 overflow-y-auto custom-scrollbar transition-all duration-300",
+                            isTagExpanded ? "max-h-[300px] pr-2" : "max-h-[120px] overflow-hidden mask-image-vertical"
+                          )}>
+                            {sortedTags.length > 0 ? (
+                                (isTagExpanded ? sortedTags : sortedTags.slice(0, 20)).map(tag => (
+                                <button
+                                    key={tag}
+                                    onClick={() => toggleTag(tag)}
+                                    className={cn(
+                                    "px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border-2",
+                                    selectedTags.includes(tag)
+                                        ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white shadow-md shadow-black/10 dark:shadow-white/5" 
+                                        : "bg-white dark:bg-neutral-950 text-neutral-600 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
+                                    )}
+                                >
+                                    {tag} <span className="opacity-50 ml-1">({tagCounts[tag]})</span>
+                                </button>
+                                ))
+                            ) : (
+                                <p className="text-[10px] text-neutral-400 italic py-2">No tags match "{tagSearch}"</p>
+                            )}
+                          </div>
+                          {!tagSearch && sortedTags.length > 20 && (
+                            <button 
+                              onClick={() => setIsTagExpanded(!isTagExpanded)}
+                              className="text-[10px] font-bold text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors uppercase tracking-[0.2em] pt-2"
                             >
-                              {tag} <span className="opacity-50 ml-1">({tagCounts[tag]})</span>
+                              {isTagExpanded ? 'Show Less' : `Show All (${sortedTags.length})`}
                             </button>
-                          ))}
+                          )}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -376,12 +479,12 @@ export const Home = () => {
 
                   {/* Clear Filters */}
                   {(selectedCategory || selectedTags.length > 0 || selectedYear || selectedMonth) && (
-                    <button 
-                      onClick={() => { 
-                        setSelectedCategory(null); 
-                        setSelectedTags([]); 
-                        setSelectedYear(null); 
-                        setSelectedMonth(null); 
+                    <button
+                      onClick={() => {
+                        setSelectedCategory(null);
+                        setSelectedTags([]);
+                        setSelectedYear(null);
+                        setSelectedMonth(null);
                         setSearchQuery('');
                         setCurrentPage(1);
                       }}
@@ -399,130 +502,130 @@ export const Home = () => {
 
         {/* Main Content Area */}
         <div className="flex-1 space-y-12">
-          <div className="flex items-center gap-4">
+          <div ref={listTopRef} className="flex items-center gap-4 scroll-mt-32">
             <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-neutral-300 dark:text-neutral-700">
               {filteredPosts.length} ARTICLES FOUND
             </span>
             <div className="h-px flex-1 bg-neutral-100 dark:bg-neutral-900" />
           </div>
-          
+
           <div className="space-y-12">
-          {postsToShow.length > 0 ? (
-            <>
-            {postsToShow.map((post) => (
-                <article key={post.id} className="group relative p-8 md:p-10 rounded-[2.5rem] border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 hover:border-neutral-900 dark:hover:border-white transition-all duration-700 hover:shadow-[0_25px_60px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_25px_60px_rgba(255,255,255,0.02)]">
-                  <div className="space-y-4">
-                    <Link to={`/post/${post.id}`} className="block space-y-4">
-                      <div className="flex items-center gap-4">
-                        <div className="px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-[0.2em] border-2 border-neutral-200/50 dark:border-neutral-700/50">
-                          {post.category}
+            {postsToShow.length > 0 ? (
+              <>
+                {postsToShow.map((post) => (
+                  <article key={post.id} className="group relative p-8 md:p-10 rounded-[2.5rem] border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 hover:border-neutral-900 dark:hover:border-white transition-all duration-700 hover:shadow-[0_25px_60px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_25px_60px_rgba(255,255,255,0.02)]">
+                    <div className="space-y-4">
+                      <Link to={`/post/${post.id}`} className="block space-y-4">
+                        <div className="flex items-center gap-4">
+                          <div className="px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-[0.2em] border-2 border-neutral-200/50 dark:border-neutral-700/50">
+                            {post.category}
+                          </div>
+                          <span className="text-[10px] font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-widest">{post.date}</span>
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                            <BookOpen size={10} />
+                            {post.readingTime} min read
+                          </div>
                         </div>
-                        <span className="text-[10px] font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-widest">{post.date}</span>
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-                          <BookOpen size={10} />
-                          {post.readingTime} min read
-                        </div>
+                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight leading-tight group-hover:text-neutral-600 dark:group-hover:text-neutral-400 transition-colors">
+                          {post.title}
+                        </h2>
+                      </Link>
+
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {post.tags.map(tag => (
+                          <button
+                            key={tag}
+                            onClick={() => {
+                              toggleTag(tag);
+                            }}
+                            className={cn(
+                              "px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all duration-500 border-2 shadow-sm",
+                              selectedTags.includes(tag)
+                                ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white"
+                                : "bg-white text-neutral-400 border-neutral-100 dark:bg-neutral-950 dark:text-neutral-600 dark:border-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100"
+                            )}
+                          >
+                            {tag}
+                          </button>
+                        ))}
                       </div>
-                      <h2 className="text-2xl md:text-3xl font-bold tracking-tight leading-tight group-hover:text-neutral-600 dark:group-hover:text-neutral-400 transition-colors">
-                        {post.title}
-                      </h2>
-                    </Link>
-                    
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {post.tags.map(tag => (
-                        <button
-                          key={tag}
-                          onClick={() => {
-                            toggleTag(tag);
-                          }}
-                          className={cn(
-                            "px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all duration-500 border-2 shadow-sm",
-                            selectedTags.includes(tag)
-                              ? "bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white"
-                              : "bg-white text-neutral-400 border-neutral-100 dark:bg-neutral-950 dark:text-neutral-600 dark:border-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100"
-                          )}
-                        >
-                          {tag}
-                        </button>
-                      ))}
+
+                      <Link to={`/post/${post.id}`} className="inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors pt-4 border-t-2 border-neutral-100 dark:border-neutral-900 w-full">
+                        VIEW FULL ARTICLE <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+
+                {totalPages > 1 && (
+                  <div className="pt-8 flex justify-center items-center gap-2">
+                    <button
+                      onClick={() => { setCurrentPage(prev => Math.max(1, prev - 1)); scrollToTop(); }}
+                      disabled={currentPage === 1}
+                      className="p-2 md:p-3 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+
+                    <div className="flex gap-1 items-center">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page, index, array) => {
+                        if (
+                          totalPages > 5 &&
+                          page !== 1 &&
+                          page !== totalPages &&
+                          Math.abs(page - currentPage) > 1
+                        ) {
+                          // Show ellipsis only if it's the first hidden page in a sequence
+                          if (
+                            (page === currentPage - 2 && page > 2) ||
+                            (page === currentPage + 2 && page < totalPages - 1)
+                          ) {
+                            return <span key={`ellipsis-${page}`} className="px-1 text-neutral-400">...</span>;
+                          }
+                          return null;
+                        }
+
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => { setCurrentPage(page); scrollToTop(); }}
+                            className={cn(
+                              "w-8 h-8 md:w-10 md:h-10 rounded-full text-xs font-bold transition-all flex items-center justify-center",
+                              currentPage === page
+                                ? "bg-neutral-900 text-white dark:bg-white dark:text-black shadow-lg scale-110"
+                                : "bg-transparent text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                            )}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
                     </div>
 
-                    <Link to={`/post/${post.id}`} className="inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors pt-4 border-t-2 border-neutral-100 dark:border-neutral-900 w-full">
-                      VIEW FULL ARTICLE <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                    <button
+                      onClick={() => { setCurrentPage(prev => Math.min(totalPages, prev + 1)); scrollToTop(); }}
+                      disabled={currentPage === totalPages}
+                      className="p-2 md:p-3 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
                   </div>
-                </article>
-              ))}
-              
-              {totalPages > 1 && (
-                <div className="pt-8 flex justify-center items-center gap-2">
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="p-2 md:p-3 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
-                  
-                  <div className="flex gap-1 items-center">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page, index, array) => {
-                      if (
-                        totalPages > 5 &&
-                        page !== 1 &&
-                        page !== totalPages &&
-                        Math.abs(page - currentPage) > 1
-                      ) {
-                        // Show ellipsis only if it's the first hidden page in a sequence
-                        if (
-                          (page === currentPage - 2 && page > 2) ||
-                          (page === currentPage + 2 && page < totalPages - 1)
-                        ) {
-                          return <span key={`ellipsis-${page}`} className="px-1 text-neutral-400">...</span>;
-                        }
-                        return null;
-                      }
-                      
-                      return (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={cn(
-                            "w-8 h-8 md:w-10 md:h-10 rounded-full text-xs font-bold transition-all flex items-center justify-center",
-                            currentPage === page
-                              ? "bg-neutral-900 text-white dark:bg-white dark:text-black shadow-lg scale-110"
-                              : "bg-transparent text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                          )}
-                        >
-                          {page}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="p-2 md:p-3 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="py-20 text-center space-y-4">
-              <p className="text-neutral-400 italic">No articles match your selection.</p>
-              <button 
-                onClick={() => { setSelectedCategory(null); setSelectedTags([]); setSelectedYear(null); setSelectedMonth(null); setSearchQuery(''); setCurrentPage(1); }}
-                className="text-sm font-bold border-b border-neutral-900 dark:border-neutral-100"
-              >
-                Clear filters
-              </button>
-            </div>
-          )}
+                )}
+              </>
+            ) : (
+              <div className="py-20 text-center space-y-4">
+                <p className="text-neutral-400 italic">No articles match your selection.</p>
+                <button
+                  onClick={() => { setSelectedCategory(null); setSelectedTags([]); setSelectedYear(null); setSelectedMonth(null); setSearchQuery(''); setCurrentPage(1); }}
+                  className="text-sm font-bold border-b border-neutral-900 dark:border-neutral-100"
+                >
+                  Clear filters
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  </motion.div>
+    </motion.div>
   );
 };

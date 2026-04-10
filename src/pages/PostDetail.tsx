@@ -123,7 +123,7 @@ export const PostDetail = () => {
           </div>
 
           <div className="space-y-6">
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-[0.9]">
+            <h1 className="text-2xl md:text-4xl font-bold tracking-tighter leading-tight">
               {displayTitle}
             </h1>
             <div className="flex flex-wrap gap-2">
