@@ -31,15 +31,15 @@ category: Linux
 ## 2. 容器生命周期 (Containers)
 容器是镜像运行后的实例（Instance）。
 
-| 命令 | 说明 | 常用参数 |
-| :--- | :--- | :--- |
-| `docker run` | **创建并启动**一个容器 | `-d` (后台), `-p` (端口映射), `--name` (命名) |
-| `docker ps` | 列出运行中的容器 | `-a` (查看所有容器，包括已停止的) |
-| `docker stop` | 停止运行中的容器 | `docker stop container_id` |
-| `docker start` | 启动已停止的容器 | `docker start container_id` |
-| `docker restart` | 重启容器 | `docker restart container_id` |
-| `docker rm` | 删除容器 | `-f` (强制删除正在运行的) |
-| `docker pause` | 暂停容器内的所有进程 | `docker pause container_id` |
+| 命令               | 说明            | 常用参数                                  |
+| :--------------- | :------------ | :------------------------------------ |
+| `docker run`     | **创建并启动**一个容器 | `-d` (后台), `-p` (端口映射), `--name` (命名) |
+| `docker ps`      | 列出运行中的容器      | `-a` (查看所有容器，包括已停止的)                  |
+| `docker stop`    | 停止运行中的容器      | `docker stop container_id`            |
+| `docker start`   | 启动已停止的容器      | `docker start container_id`           |
+| `docker restart` | 重启容器          | `docker restart container_id`         |
+| `docker rm`      | 删除容器          | `-f` (强制删除正在运行的)                      |
+| `docker pause`   | 暂停容器内的所有进程    | `docker pause container_id`           |
 
 ---
 

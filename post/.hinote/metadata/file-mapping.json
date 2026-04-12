@@ -1,0 +1,18 @@
+{
+  "version": "2.0",
+  "mapping": {
+    "面试/Untitled.md": "面试_untitled.md.json",
+    "面试/k8s基础问答.md": "面试_k8s基础问答.md.json",
+    "面试/为了面试复盘的那些事：MySQL 锁机制和 Redis 一致性的深度考究.md": "面试_为了面试复盘的那些事：mysql_锁机制和_redis_一致性的深度考究.md.json",
+    "面试/MySQL 锁机制和 Redis 一致性.md": "面试_mysql_锁机制和_redis_一致性.md.json",
+    "教程/ K8s 入门操作指南：从下载到部署容器.md": "教程__k8s_入门操作指南：从下载到部署容器.md.json",
+    "服务器/ K8s 入门操作指南：从下载到部署容器.md": "服务器__k8s_入门操作指南：从下载到部署容器.md.json",
+    "draft/k8s基础问答.md": "draft_k8s基础问答.md.json",
+    "GIT/Untitled.md": "git_untitled.md.json",
+    "GIT/Github Action实现自动部署项目流程.md": "git_github_action实现自动部署项目流程.md.json",
+    "服务器/Untitled.md": "服务器_untitled.md.json",
+    "服务器/.md": "服务器_.md.json",
+    "服务器/jenkins实现自动部署和搭建.md": "服务器_jenkins实现自动部署和搭建.md.json"
+  },
+  "lastUpdated": 1775973096961
+}
