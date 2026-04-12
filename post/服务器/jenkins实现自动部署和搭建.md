@@ -8,7 +8,7 @@ tags:
   - 运维
   - "#jenkins"
 emaili: y252840@163.com
-updated:
+updated: 2025-06-12
 category: Linux
 ---
 **需要预备的知识（Docker,springboot,git**）
@@ -290,3 +290,97 @@ Kubernetes
 ```
 
 ---
+### 环境检测安装脚本
+```bash
+
+#!/bin/bash
+
+echo "=============================="
+echo " Dev Environment Auto Installer"
+echo "=============================="
+
+# 检测命令是否存在
+check_command () {
+    command -v $1 >/dev/null 2>&1
+}
+
+install_git () {
+    echo "Installing Git..."
+    sudo apt install git -y
+}
+
+install_docker () {
+    echo "Installing Docker..."
+    sudo apt install docker.io -y
+    sudo systemctl enable docker
+    sudo systemctl start docker
+}
+
+install_maven () {
+    echo "Installing Maven..."
+    sudo apt install maven -y
+}
+
+install_node () {
+    echo "Installing Node.js..."
+    sudo apt install nodejs npm -y
+}
+
+install_jdk () {
+    echo "Installing OpenJDK..."
+    sudo apt install openjdk-17-jdk -y
+}
+
+echo ""
+echo "Checking dependencies..."
+echo ""
+
+# Git
+if check_command git; then
+    echo "Git already installed"
+else
+    install_git
+fi
+
+# Docker
+if check_command docker; then
+    echo "Docker already installed"
+else
+    install_docker
+fi
+
+# Maven
+if check_command mvn; then
+    echo "Maven already installed"
+else
+    install_maven
+fi
+
+# Node
+if check_command node; then
+    echo "Node.js already installed"
+else
+    install_node
+fi
+
+# JDK
+if check_command java; then
+    echo "Java already installed"
+else
+    install_jdk
+fi
+
+echo ""
+echo "=============================="
+echo "Environment Ready!"
+echo "=============================="
+
+# 显示版本
+echo ""
+echo "Installed Versions:"
+git --version
+docker --version
+mvn -version | head -n 1
+node -v
+java -version
+```
