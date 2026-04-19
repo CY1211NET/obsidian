@@ -14,7 +14,10 @@
     "服务器/.md": "服务器_.md.json",
     "服务器/jenkins实现自动部署和搭建.md": "服务器_jenkins实现自动部署和搭建.md.json",
     "服务器/Jenkins+.md": "服务器_jenkins+.md.json",
-    "服务器/WSL 环境下从零搭建 Jenkins + GitLab 自动化更新方案.md": "服务器_wsl_环境下从零搭建_jenkins_+_gitlab_自动化更新方案.md.json"
+    "服务器/WSL 环境下从零搭建 Jenkins + GitLab 自动化更新方案.md": "服务器_wsl_环境下从零搭建_jenkins_+_gitlab_自动化更新方案.md.json",
+    "linux/Untitled.md": "linux_untitled.md.json",
+    "linux/服务器网络丢包或者网络延迟严重排查.md": "linux_服务器网络丢包或者网络延迟严重排查.md.json",
+    "linux/服务器网络丢包或者网络延迟严重排查方法.md": "linux_服务器网络丢包或者网络延迟严重排查方法.md.json"
   },
-  "lastUpdated": 1775975041156
+  "lastUpdated": 1776611419482
 }
