@@ -13,3 +13,5 @@ Tags/
 .makemd/
 .trash/
 .draft/
+.QuestionBank/
+*.mdc
