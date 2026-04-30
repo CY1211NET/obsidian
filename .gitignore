@@ -10,8 +10,11 @@ coverage/
 template/
 Tags/
 .space/
-.makemd/
+makemd/
 .trash/
 .draft/
 .QuestionBank/
-*.mdc
+post/.makemd/
+post/.hinote/
+post/.trash/
+post/QuestionBank/
