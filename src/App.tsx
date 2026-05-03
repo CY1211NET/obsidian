@@ -604,7 +604,7 @@ const useActiveHeading = (headingIds: string[]) => {
   return activeId;
 };
 
-const TocNode = ({ item, depth = 0, activeId }: { item: TocItem; depth?: number; activeId?: string }) => {
+const TocNode = ({ item, depth = 0, activeId, activeItemRef }: { item: TocItem; depth?: number; activeId?: string; activeItemRef?: React.RefObject<HTMLAnchorElement | null> }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const hasChildren = item.children.length > 0;
   const isActive = activeId === item.id;
@@ -613,14 +613,15 @@ const TocNode = ({ item, depth = 0, activeId }: { item: TocItem; depth?: number;
     <div className="space-y-1">
       <div className="flex items-center group">
         {hasChildren && (
-          <button 
+          <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="p-1 -ml-6 mr-1 text-neutral-400 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
           >
             {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </button>
         )}
-        <a 
+        <a
+          ref={isActive ? activeItemRef : undefined}
           href={`#${item.id}`}
           className={cn(
             "text-sm transition-all block py-1.5 rounded-lg px-2 -mx-2",
@@ -641,7 +642,7 @@ const TocNode = ({ item, depth = 0, activeId }: { item: TocItem; depth?: number;
       {hasChildren && isExpanded && (
         <div className={cn("pl-4 ml-1 border-l-2 transition-colors", isActive ? "border-neutral-900 dark:border-neutral-100" : "border-neutral-100 dark:border-neutral-900")}>
           {item.children.map((child) => (
-            <TocNode key={child.id} item={child} depth={depth + 1} activeId={activeId} />
+            <TocNode key={child.id} item={child} depth={depth + 1} activeId={activeId} activeItemRef={activeItemRef} />
           ))}
         </div>
       )}
@@ -835,20 +836,34 @@ export const TableOfContents = ({ content }: { content: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   const headingIds = React.useMemo(() => flattenToc(toc), [toc]);
   const activeId = useActiveHeading(headingIds);
+  const tocContainerRef = React.useRef<HTMLDivElement>(null);
+  const activeItemRef = React.useRef<HTMLAnchorElement>(null);
+
+  // Auto-scroll the TOC sidebar to keep the active item centered
+  useEffect(() => {
+    if (activeId && activeItemRef.current && tocContainerRef.current) {
+      const container = tocContainerRef.current;
+      const item = activeItemRef.current;
+      const itemTopInContainer = item.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+      const targetScroll = itemTopInContainer - container.clientHeight / 2 + item.clientHeight / 2;
+
+      container.scrollTo({ top: targetScroll, behavior: 'smooth' });
+    }
+  }, [activeId]);
 
   if (toc.length === 0) return null;
 
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden xl:block w-72 shrink-0 sticky top-32 max-h-[calc(100vh-10rem)] overflow-y-auto p-6 bg-white/70 dark:bg-black/70 backdrop-blur-2xl rounded-3xl shadow-xl border-2 border-neutral-200 dark:border-neutral-800 z-40 hide-scrollbar">
+      <aside ref={tocContainerRef} className="hidden xl:block w-72 shrink-0 sticky top-32 max-h-[calc(100vh-10rem)] overflow-y-auto p-6 bg-white/70 dark:bg-black/70 backdrop-blur-2xl rounded-3xl shadow-xl border-2 border-neutral-200 dark:border-neutral-800 z-40 hide-scrollbar">
         <div className="space-y-6">
           <div className="flex items-center gap-2 text-[10px] font-extrabold text-neutral-900 dark:text-neutral-100 uppercase tracking-[0.3em]">
             <List size={12} /> CONTENTS
           </div>
           <div className="space-y-2">
             {toc.map((item) => (
-              <TocNode key={item.id} item={item} activeId={activeId} />
+              <TocNode key={item.id} item={item} activeId={activeId} activeItemRef={activeItemRef} />
             ))}
           </div>
         </div>
