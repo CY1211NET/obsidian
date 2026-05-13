@@ -77,9 +77,7 @@ git push -u origin main
 ```
 ! [rejected] main -> main (fetch first)
 ```
-
-说明**远程仓库已有内容**（如默认的 README.md），  
-本地需要先同步。
+说明**远程仓库已有内容**（如默认的 README.md），  本地需要先同步。
 
 ---
 
