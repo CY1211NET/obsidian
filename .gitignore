@@ -1,20 +1,35 @@
+# 构建产物
 node_modules/
 build/
 dist/
 coverage/
+
+# 系统文件
 .DS_Store
 *.log
+
+# 环境变量（保留示例）
 .env*
 !.env.example
-.obsidian/
-template/
-Tags/
-.space/
-makemd/
-.trash/
-.draft/
-.QuestionBank/
+
+# Obsidian 配置
+/.obsidian
+
+# 模板与标签
+/template
+/Tags
+
+# 草稿与题库
+/.draft
+/.QuestionBank
+post/QuestionBank/
+
+# Obsidian 插件数据
+post/.space/
 post/.makemd/
 post/.hinote/
-post/.trash/
-post/QuestionBank/
+post/.strash/
+
+# 特定目录
+post/Excalidraw/
+post/ShagooDHR操作手册/
