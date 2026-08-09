@@ -13,23 +13,25 @@ coverage/
 !.env.example
 
 # Obsidian 配置
-/.obsidian
+.obsidian/
 
 # 模板与标签
-/template
-/Tags
+template/
+Tags/
 
 # 草稿与题库
-/.draft
-/.QuestionBank
-post/QuestionBank/
+draft/
+QuestionBank/
 
-# Obsidian 插件数据
-post/.space/
-post/.makemd/
-post/.hinote/
-post/.strash/
+# Obsidian 插件数据（所有子目录）
+**/.space/
+**/.makemd/
+**/.hinote/
+**/.strash/
+
+# 回收站
+.trash/
 
 # 特定目录
-post/Excalidraw/
-post/ShagooDHR操作手册/
+Excalidraw/
+ShagooDHR操作手册/
